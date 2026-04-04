@@ -15,7 +15,10 @@
     "motion": "^12.23.24",
     "lucide-react": "^0.546.0",
     "resend": "^4.0.0",
-    "better-sqlite3": "^12.4.1"
+    "better-sqlite3": "^12.4.1",
+    "@anthropic-ai/sdk": "^0.39.0",
+    "react-markdown": "^9.0.3",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

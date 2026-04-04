@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { motion, useScroll, useTransform } from 'motion/react'
 import Image from 'next/image'
+import Link from 'next/link'
+import type { Article } from '@/lib/articles'
 import {
   Trophy, Target, Globe, Smartphone, BarChart3, Mic2,
   TrendingUp, Zap, Phone, ChevronDown, Calendar, ArrowRight,
@@ -129,7 +131,7 @@ const MARKET_STATS = [
 // ─────────────────────────────────────────────────────────────────────────────
 // COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
-export default function HomeContent() {
+export default function HomeContent({ articles = [] }: { articles?: Article[] }) {
   const { scrollYProgress } = useScroll()
   const heroScale = useTransform(scrollYProgress, [0, 0.3], [1, 1.08])
   const heroOpacity = useTransform(scrollYProgress, [0, 0.25], [1, 0])
@@ -580,31 +582,49 @@ export default function HomeContent() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-12">
-            {NOTICIAS.map((news, i) => (
-              <motion.article
-                key={i}
-                whileHover={{ y: -8 }}
-                className="group cursor-pointer"
-              >
-                <div className="aspect-video overflow-hidden mb-6 relative">
-                  <div className="absolute top-4 left-4 z-10 bg-gold text-navy px-3 py-1 text-[10px] font-black uppercase tracking-widest">
-                    {news.category}
+            {articles.map((article, i) => (
+              <Link key={article.id} href={`/noticias/${article.slug}`}>
+                <motion.article
+                  whileHover={{ y: -8 }}
+                  className="group cursor-pointer"
+                >
+                  <div className="aspect-video overflow-hidden mb-6 relative">
+                    <div className="absolute top-4 left-4 z-10 bg-gold text-navy px-3 py-1 text-[10px] font-black uppercase tracking-widest">
+                      {article.category}
+                    </div>
+                    {article.image_url ? (
+                      <Image
+                        src={article.image_url}
+                        alt={article.image_alt || article.title}
+                        fill
+                        className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-500"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-white/5" />
+                    )}
                   </div>
-                  <Image
-                    src={news.image}
-                    alt={news.title}
-                    fill
-                    className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-500"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  />
-                </div>
-                <time className="text-gold font-black text-[10px] tracking-widest block mb-2">{news.date}</time>
-                <h3 className="text-2xl font-display font-black italic leading-tight group-hover:text-gold transition-colors">
-                  {news.title}
-                </h3>
-              </motion.article>
+                  <time className="text-gold font-black text-[10px] tracking-widest block mb-2">
+                    {new Date(article.created_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}
+                  </time>
+                  <h3 className="text-2xl font-display font-black italic leading-tight group-hover:text-gold transition-colors">
+                    {article.title}
+                  </h3>
+                </motion.article>
+              </Link>
             ))}
           </div>
+
+          {articles.length > 0 && (
+            <div className="mt-16 text-center">
+              <Link
+                href="/noticias"
+                className="inline-flex items-center gap-3 border border-gold text-gold px-8 py-4 font-black text-sm tracking-widest uppercase hover:bg-gold hover:text-navy transition-colors"
+              >
+                Ver todas las noticias <ArrowRight size={16} />
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 
