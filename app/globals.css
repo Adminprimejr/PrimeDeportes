@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-montserrat), sans-serif;
+
+  --color-navy: #1A3A5C;
+  --color-navy-dark: #050B14;
+  --color-gold: #F4C430;
+  --color-gold-bright: #FFD700;
+  --color-accent-red: #E63946;
+}
+
+@layer base {
+  body {
+    @apply bg-navy-dark text-white antialiased selection:bg-gold selection:text-navy overflow-x-hidden;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+/* Broadcast Aesthetics */
+.ticker-wrap {
+  @apply fixed bottom-0 left-0 w-full bg-accent-red text-white py-2 z-[100] overflow-hidden border-t-2 border-white/20;
+}
+
+.ticker-content {
+  display: inline-block;
+  white-space: nowrap;
+  animation: ticker 35s linear infinite;
+}
+
+@keyframes ticker {
+  0% { transform: translateX(100vw); }
+  100% { transform: translateX(-100%); }
+}
+
+.broadcast-glow {
+  box-shadow: 0 0 50px rgba(244, 196, 48, 0.15);
+}
+
+.skew-section {
+  transform: skewY(-2deg);
+}
+
+.skew-content {
+  transform: skewY(2deg);
+}
+
+.text-stroke {
+  -webkit-text-stroke: 1px rgba(255,255,255,0.2);
+  color: transparent;
+}
+
+.bg-pitch {
+  background-image:
+    linear-gradient(rgba(5, 11, 20, 0.9), rgba(5, 11, 20, 0.9)),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.editorial-title {
+  @apply font-display font-black italic uppercase leading-[0.85] tracking-tighter;
+}
