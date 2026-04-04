@@ -12,6 +12,7 @@ import Ticker from './Ticker'
 import Countdown from './Countdown'
 import StatCard from './StatCard'
 import ContactForm from './ContactForm'
+import ROIEstimator from './ROIEstimator'
 
 const CALENDLY_URL = process.env.NEXT_PUBLIC_CALENDLY_URL || 'https://calendly.com/primedeportes'
 
@@ -49,7 +50,7 @@ const PACKS = [
     title: 'DIGITAL TOTAL',
     icon: Smartphone,
     coverage: 'TEMPORADA 2025–2026',
-    price: 'DESDE $2,500 USD / MES',
+    price: 'DESDE $500 USD / MES',
     features: [
       'Banners premium en web y app',
       'Menciones editoriales',
@@ -63,7 +64,7 @@ const PACKS = [
     title: 'MULTIMEDIA PRO',
     icon: Mic2,
     coverage: 'MUNDIAL 2026 EXCLUSIVE',
-    price: 'DESDE $8,000 USD / MES',
+    price: 'DESDE $1,800 USD / MES',
     features: [
       'Todo lo del paquete Digital',
       'Podcast sponsorship (host-read)',
@@ -78,7 +79,7 @@ const PACKS = [
     title: 'LIVE EXPERIENCE',
     icon: Trophy,
     coverage: 'MUNDIAL 2026 ON-SITE',
-    price: 'DESDE $25,000 USD',
+    price: 'DESDE $7,500 USD',
     features: [
       'Todo lo del paquete Multimedia',
       'Activaciones en estadios',
@@ -300,10 +301,10 @@ export default function HomeContent() {
               <div className="aspect-[4/5] bg-gradient-to-b from-navy to-navy-dark border-8 border-white/5 relative group overflow-hidden flex items-end">
                 <div className="absolute inset-0 bg-gradient-to-t from-gold/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
                 <Image
-                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80"
+                  src="/jorge.jpg"
                   alt="Jorge Rodríguez — Director General Prime Deportes"
                   fill
-                  className="object-cover grayscale brightness-75 group-hover:scale-105 transition-transform duration-700"
+                  className="object-cover object-top group-hover:scale-105 transition-transform duration-700"
                   sizes="(max-width: 1024px) 100vw, 50vw"
                 />
                 <div className="absolute bottom-10 left-10 z-20">
@@ -513,6 +514,8 @@ export default function HomeContent() {
           </div>
         </div>
       </section>
+
+      <ROIEstimator />
 
       {/* ── FAQ ──────────────────────────────────────────────────────────── */}
       <section className="py-40 bg-navy-dark border-t-8 border-white/5">

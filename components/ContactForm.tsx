@@ -75,9 +75,9 @@ export default function ContactForm() {
           <label className={labelClass}>PAQUETE DE INTERÉS</label>
           <select value={form.pack} onChange={set('pack')} className={`${inputClass} bg-navy-dark`}>
             <option value="">Seleccionar...</option>
-            <option value="digital">Digital Total — desde $2,500 USD/mes</option>
-            <option value="multimedia">Multimedia Pro — desde $8,000 USD/mes</option>
-            <option value="live">Live Experience — desde $25,000 USD</option>
+            <option value="digital">Digital Total — desde $500 USD/mes</option>
+            <option value="multimedia">Multimedia Pro — desde $1,800 USD/mes</option>
+            <option value="live">Live Experience — desde $7,500 USD</option>
             <option value="custom">Estrategia a medida</option>
           </select>
         </div>
