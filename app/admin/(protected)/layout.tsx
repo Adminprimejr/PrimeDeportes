@@ -3,12 +3,16 @@ import { redirect } from 'next/navigation'
 import { verifyToken, COOKIE_NAME } from '@/lib/auth'
 import AdminNav from '@/components/admin/AdminNav'
 
-export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
-  const cookieStore = await cookies()
-  const token = cookieStore.get(COOKIE_NAME)?.value
+// Set ADMIN_OPEN=1 in .env.local to bypass login (useful during initial setup)
+const BYPASS = process.env.ADMIN_OPEN === '1'
 
-  if (!token || !verifyToken(token)) {
-    redirect('/admin/login')
+export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
+  if (!BYPASS) {
+    const cookieStore = await cookies()
+    const token = cookieStore.get(COOKIE_NAME)?.value
+    if (!token || !verifyToken(token)) {
+      redirect('/admin/login')
+    }
   }
 
   return (
