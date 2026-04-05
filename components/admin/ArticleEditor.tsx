@@ -78,6 +78,7 @@ export default function ArticleEditor({ initialDraft, articleId, mode }: Props) 
   const [saving, setSaving] = useState(false)
   const [publishing, setPublishing] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [errorMsg, setErrorMsg] = useState('')
 
   function update(field: keyof ArticleDraft, value: string | null) {
     setDraft((prev) => {
@@ -94,6 +95,7 @@ export default function ArticleEditor({ initialDraft, articleId, mode }: Props) 
 
   async function saveArticle(publish = false): Promise<number | null> {
     setSaving(true)
+    setErrorMsg('')
     try {
       const payload = { ...draft, published: publish ? 1 : 0 }
       let id = articleId
@@ -105,7 +107,7 @@ export default function ArticleEditor({ initialDraft, articleId, mode }: Props) 
         })
         if (!res.ok) {
           const data = await res.json()
-          alert(data.error || 'Error al guardar')
+          setErrorMsg(data.error || 'Error al guardar el artículo')
           return null
         }
         const created = await res.json()
@@ -118,7 +120,7 @@ export default function ArticleEditor({ initialDraft, articleId, mode }: Props) 
         })
         if (!res.ok) {
           const data = await res.json()
-          alert(data.error || 'Error al guardar')
+          setErrorMsg(data.error || 'Error al guardar el artículo')
           return null
         }
       }
@@ -168,7 +170,8 @@ export default function ArticleEditor({ initialDraft, articleId, mode }: Props) 
           </button>
         </div>
         <div className="flex items-center gap-3">
-          {saved && <span className="text-green-400 text-xs font-black flex items-center gap-1"><CheckCircle size={12} /> Guardado</span>}
+          {errorMsg && <span className="text-red-400 text-xs font-black flex items-center gap-1"><AlertCircle size={12} /> {errorMsg}</span>}
+          {saved && !errorMsg && <span className="text-green-400 text-xs font-black flex items-center gap-1"><CheckCircle size={12} /> Guardado</span>}
           <button
             onClick={handleSave}
             disabled={saving}

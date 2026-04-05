@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'motion/react'
 
-const WORLD_CUP = new Date('2026-06-11T00:00:00').getTime()
+// Sales close June 1 — that's the real deadline for advertisers
+const WORLD_CUP = new Date('2026-06-01T00:00:00').getTime()
 
 const LABELS: Record<string, string> = {
   days: 'DÍAS',

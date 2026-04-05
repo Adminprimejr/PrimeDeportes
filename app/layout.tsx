@@ -139,6 +139,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es" className={`${inter.variable} ${montserrat.variable}`}>
       <head>
+        {/* Preconnect to critical 3rd-party origins for faster resource loading */}
+        <link rel="preconnect" href="https://images.unsplash.com" />
+        <link rel="preconnect" href="https://calendly.com" />
+        <link rel="dns-prefetch" href="https://assets.calendly.com" />
         <Script
           id="schema-org"
           type="application/ld+json"

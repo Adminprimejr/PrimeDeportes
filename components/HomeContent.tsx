@@ -15,6 +15,7 @@ import Countdown from './Countdown'
 import StatCard from './StatCard'
 import ContactForm from './ContactForm'
 import ROIEstimator from './ROIEstimator'
+import Testimonials from './Testimonials'
 
 const CALENDLY_URL = process.env.NEXT_PUBLIC_CALENDLY_URL || 'https://calendly.com/primedeportes'
 
@@ -220,6 +221,7 @@ export default function HomeContent({ articles = [] }: { articles?: Article[] })
               <span className={`text-xs font-black uppercase tracking-widest ${color}`}>{pct}</span>
             </div>
           ))}
+          <span className="text-[9px] text-white/15 font-black uppercase tracking-widest hidden lg:inline">* Datos de inventario publicitario Q1 2026</span>
         </div>
       </div>
 
@@ -375,7 +377,10 @@ export default function HomeContent({ articles = [] }: { articles?: Article[] })
             ))}
           </div>
 
-          <div className="mt-16 text-center">
+          <div className="mt-16 text-center space-y-3">
+            <p className="text-white/50 text-sm font-black uppercase tracking-widest">
+              Todos los paquetes cubren el torneo completo: <span className="text-gold">11 jun – 19 jul 2026 (39 días)</span>
+            </p>
             <p className="text-white/20 text-xs font-black uppercase tracking-widest">
               * Precios de referencia en USD. Paquetes personalizados disponibles según alcance y duración.
             </p>
@@ -428,7 +433,7 @@ export default function HomeContent({ articles = [] }: { articles?: Article[] })
               >
                 <div className="text-4xl md:text-5xl font-display font-black italic text-gold mb-3">{value}</div>
                 <p className="text-sm font-bold text-white/70 leading-snug mb-3">{label}</p>
-                <div className="text-[10px] text-white/25 font-black uppercase tracking-wider">{source}</div>
+                <div className="text-[10px] text-white/40 font-black uppercase tracking-wider">{source}</div>
               </motion.div>
             ))}
           </div>
@@ -518,6 +523,8 @@ export default function HomeContent({ articles = [] }: { articles?: Article[] })
       </section>
 
       <ROIEstimator />
+
+      <Testimonials />
 
       {/* ── FAQ ──────────────────────────────────────────────────────────── */}
       <section className="py-40 bg-navy-dark border-t-8 border-white/5">
@@ -645,8 +652,8 @@ export default function HomeContent({ articles = [] }: { articles?: Article[] })
                   <div className="text-gold font-black text-4xl italic shrink-0">01</div>
                   <div>
                     <div className="text-xs font-black text-white/40 uppercase tracking-widest mb-2">LLÁMANOS</div>
-                    <div className="text-2xl font-display font-black italic">+1 (737) 351-2340</div>
-                    <div className="text-xl font-display font-black italic text-white/40">+57 (300) 322-0068</div>
+                    <a href="tel:+17373512340" className="text-2xl font-display font-black italic hover:text-gold transition-colors block">+1 (737) 351-2340</a>
+                    <a href="tel:+573003220068" className="text-xl font-display font-black italic text-white/40 hover:text-gold transition-colors block">+57 (300) 322-0068</a>
                   </div>
                 </div>
                 <div className="flex gap-8">

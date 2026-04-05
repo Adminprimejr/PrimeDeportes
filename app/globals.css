@@ -12,15 +12,29 @@
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
   body {
     @apply bg-navy-dark text-white antialiased selection:bg-gold selection:text-navy overflow-x-hidden;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 }
 
+/* Respect user motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* Broadcast Aesthetics */
 .ticker-wrap {
   @apply fixed bottom-0 left-0 w-full bg-accent-red text-white py-2 z-[100] overflow-hidden border-t-2 border-white/20;
+  height: 44px; /* Reserve explicit height to prevent CLS */
 }
 
 .ticker-content {

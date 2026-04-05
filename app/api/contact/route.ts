@@ -6,6 +6,11 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 const FROM = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
 const TO = process.env.RESEND_TO_EMAIL || 'journalist@primedeportes.com'
 
+// Prevent XSS in email HTML by escaping user-supplied strings
+function esc(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;')
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
@@ -26,11 +31,11 @@ export async function POST(req: NextRequest) {
         subject: `Nueva solicitud publicitaria: ${company}`,
         html: `
           <h2 style="color:#F4C430;">Nueva solicitud — Prime Deportes Mundial 2026</h2>
-          <p><strong>Nombre:</strong> ${name}</p>
-          <p><strong>Empresa:</strong> ${company}</p>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Paquete de interés:</strong> ${pack || 'No especificado'}</p>
-          <p><strong>Mensaje:</strong> ${message || 'Sin mensaje'}</p>
+          <p><strong>Nombre:</strong> ${esc(name)}</p>
+          <p><strong>Empresa:</strong> ${esc(company)}</p>
+          <p><strong>Email:</strong> ${esc(email)}</p>
+          <p><strong>Paquete de interés:</strong> ${esc(pack || 'No especificado')}</p>
+          <p><strong>Mensaje:</strong> ${esc(message || 'Sin mensaje')}</p>
         `,
       })
 
@@ -43,8 +48,8 @@ export async function POST(req: NextRequest) {
             <div style="font-size:28px;font-weight:900;font-style:italic;margin-bottom:24px;">
               PRIME<span style="color:#F4C430;">DEPORTES</span>
             </div>
-            <p>Hola ${name},</p>
-            <p>Recibimos tu solicitud y estamos revisando la mejor estrategia para <strong>${company}</strong> durante el Mundial 2026.</p>
+            <p>Hola ${esc(name)},</p>
+            <p>Recibimos tu solicitud y estamos revisando la mejor estrategia para <strong>${esc(company)}</strong> durante el Mundial 2026.</p>
             <p>Te escribiré personalmente en menos de 24 horas para coordinar una llamada.</p>
             <p>Si necesitas respuesta inmediata:<br/>
               📱 WhatsApp: <a href="https://wa.me/17373512340" style="color:#F4C430;">+1 (737) 351-2340</a><br/>

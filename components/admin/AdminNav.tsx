@@ -27,6 +27,8 @@ export default function AdminNav() {
       {/* Mobile toggle */}
       <button
         onClick={() => setMobileOpen(!mobileOpen)}
+        aria-label={mobileOpen ? 'Cerrar menú de navegación' : 'Abrir menú de navegación'}
+        aria-expanded={mobileOpen}
         className="lg:hidden fixed top-4 left-4 z-50 bg-gold text-navy p-2"
       >
         {mobileOpen ? <X size={20} /> : <Menu size={20} />}

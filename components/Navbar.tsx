@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'motion/react'
 import { Menu, X } from 'lucide-react'
 
 const NAV_ITEMS = ['Inicio', 'Nosotros', 'Packs', 'Noticias']
+const MEDIA_KIT_URL = `mailto:journalist@primedeportes.com?subject=Media%20Kit%20Request%20%E2%80%94%20Prime%20Deportes%20Mundial%202026&body=Hola%2C%20quisiera%20recibir%20el%20media%20kit%20de%20Prime%20Deportes%20para%20el%20Mundial%202026.`
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -36,11 +37,17 @@ export default function Navbar() {
             <a
               key={item}
               href={`#${item.toLowerCase()}`}
-              className="text-xs font-black uppercase tracking-[0.2em] text-white/60 hover:text-gold transition-colors"
+              className="text-xs font-black uppercase tracking-[0.2em] text-white/70 hover:text-gold transition-colors"
             >
               {item}
             </a>
           ))}
+          <a
+            href={MEDIA_KIT_URL}
+            className="text-xs font-black uppercase tracking-[0.2em] text-white/40 hover:text-gold transition-colors border border-white/10 px-4 py-2 hover:border-gold/40"
+          >
+            Media Kit
+          </a>
           <motion.a
             href="#contacto"
             whileHover={{ scale: 1.05, skewX: -10 }}

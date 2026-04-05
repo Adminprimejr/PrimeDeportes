@@ -10,6 +10,7 @@ export const metadata: Metadata = {
     title: 'Noticias del Mundial 2026 | Prime Deportes',
     description: 'Cobertura editorial del Mundial 2026: sedes, grupos, análisis y oportunidades de marketing para marcas hispanas.',
     type: 'website',
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Prime Deportes Noticias — Mundial 2026' }],
   },
 }
 
@@ -31,9 +32,27 @@ function formatDate(dateStr: string) {
 export default function NoticiasPage() {
   const articles = getPublishedArticles(30)
   const [featured, ...rest] = articles
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://primedeportes.com'
+
+  const itemListSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Noticias del Mundial 2026 — Prime Deportes',
+    description: 'Cobertura editorial del Mundial FIFA 2026',
+    url: `${siteUrl}/noticias`,
+    numberOfItems: articles.length,
+    itemListElement: articles.map((a, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      url: `${siteUrl}/noticias/${a.slug}`,
+      name: a.title,
+    })),
+  }
 
   return (
-    <main className="min-h-screen bg-navy-dark pt-28">
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }} />
+      <main className="min-h-screen bg-navy-dark pt-28">
       <div className="container mx-auto px-6 pb-40">
 
         {/* Header */}
@@ -120,5 +139,6 @@ export default function NoticiasPage() {
 
       </div>
     </main>
+    </>
   )
 }

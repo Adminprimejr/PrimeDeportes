@@ -2,6 +2,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { verifyToken, COOKIE_NAME } from '@/lib/auth'
 import AdminNav from '@/components/admin/AdminNav'
+import { ToastContainer } from '@/components/admin/Toast'
 
 // Set ADMIN_OPEN=1 in .env.local to bypass login (useful during initial setup)
 const BYPASS = process.env.ADMIN_OPEN === '1'
@@ -21,6 +22,7 @@ export default async function ProtectedLayout({ children }: { children: React.Re
       <div className="flex-1 lg:ml-64 min-h-screen">
         <div className="p-6 lg:p-10">{children}</div>
       </div>
+      <ToastContainer />
     </div>
   )
 }

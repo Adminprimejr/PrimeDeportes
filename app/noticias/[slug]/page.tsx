@@ -143,8 +143,35 @@ export default async function ArticlePage({ params }: Props) {
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{article.content}</ReactMarkdown>
           </div>
 
+          {/* In-article conversion CTA */}
+          <div className="mt-16 bg-gold/5 border-2 border-gold p-8 md:p-10">
+            <div className="text-gold font-black text-xs tracking-[0.4em] uppercase mb-3">¿LISTO PARA ANUNCIAR?</div>
+            <h3 className="font-display font-black italic text-white text-2xl md:text-3xl leading-tight mb-4">
+              Conecta tu marca con millones de fans hispanos durante el Mundial 2026
+            </h3>
+            <p className="text-white/50 text-sm mb-8 leading-relaxed">
+              Cupos publicitarios limitados. Cierre de ventas: <strong className="text-gold">1 de junio 2026</strong>.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <Link
+                href="/#packs"
+                className="bg-gold text-navy font-black px-6 py-3 text-sm uppercase tracking-widest hover:bg-white transition-colors"
+              >
+                Ver Paquetes
+              </Link>
+              <a
+                href={process.env.NEXT_PUBLIC_CALENDLY_URL || 'https://calendly.com/jorgeerodriguezserrano'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border border-gold text-gold font-black px-6 py-3 text-sm uppercase tracking-widest hover:bg-gold hover:text-navy transition-colors"
+              >
+                Agendar Llamada Gratis
+              </a>
+            </div>
+          </div>
+
           {/* Back link */}
-          <div className="mt-20 pt-12 border-t border-white/10">
+          <div className="mt-12 pt-8 border-t border-white/10">
             <Link
               href="/noticias"
               className="inline-flex items-center gap-2 text-gold font-black text-sm tracking-widest uppercase hover:underline"
