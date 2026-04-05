@@ -7,4 +7,5 @@ coverage/
 *.log
 .env*
 !.env.example
-data/
+# data/ — intentionally NOT ignored so seeded articles deploy with the site
+# data/

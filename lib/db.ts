@@ -2,12 +2,26 @@ import Database from 'better-sqlite3'
 import path from 'path'
 import fs from 'fs'
 
-const dataDir = path.join(process.cwd(), 'data')
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true })
+// On Vercel the project root is read-only; use /tmp for writes.
+// Locally, use data/ so the seeded DB persists between runs.
+const isVercel = process.env.VERCEL === '1'
+
+let dbPath: string
+if (isVercel) {
+  // Copy the seeded DB from the bundle into /tmp on first cold start
+  const tmpPath = '/tmp/leads.db'
+  const bundledPath = path.join(process.cwd(), 'data', 'leads.db')
+  if (!fs.existsSync(tmpPath) && fs.existsSync(bundledPath)) {
+    fs.copyFileSync(bundledPath, tmpPath)
+  }
+  dbPath = tmpPath
+} else {
+  const dataDir = path.join(process.cwd(), 'data')
+  if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true })
+  dbPath = path.join(dataDir, 'leads.db')
 }
 
-const db = new Database(path.join(dataDir, 'leads.db'))
+const db = new Database(dbPath)
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS leads (
