@@ -70,7 +70,10 @@ export default function NewArticlePage() {
               <Sparkles size={16} className="text-gold" />
               <span className="text-xs font-black uppercase tracking-widest text-white/60">Asistente Editorial IA</span>
             </div>
-            <AIChat onArticleReady={(article) => { handleArticleReady(article); setTab('manual') }} />
+            <AIChat
+              onArticleReady={(article) => { handleArticleReady(article); setTab('manual') }}
+              onSwitchToEditor={() => setTab('manual')}
+            />
           </div>
 
           {/* Instructions panel */}

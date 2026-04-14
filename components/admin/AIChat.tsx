@@ -23,6 +23,7 @@ interface ArticleDraft {
 
 interface Props {
   onArticleReady: (draft: ArticleDraft) => void
+  onSwitchToEditor?: () => void
 }
 
 const STARTER_PROMPTS = [
@@ -32,7 +33,7 @@ const STARTER_PROMPTS = [
   'Artículo sobre las sedes del Mundial en Estados Unidos',
 ]
 
-export default function AIChat({ onArticleReady }: Props) {
+export default function AIChat({ onArticleReady, onSwitchToEditor }: Props) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -120,10 +121,21 @@ export default function AIChat({ onArticleReady }: Props) {
                   ? 'bg-white/5 border border-white/10 text-white/80'
                   : 'bg-gold/10 border border-gold/30 text-white'
               }`}>
-                {/* If assistant message contains JSON article, show a notice instead of raw JSON */}
-                {msg.role === 'assistant' && msg.content.includes('"slug"') && msg.content.includes('"content"')
-                  ? '✓ Artículo generado. Revisa y edita el borrador a la derecha.'
-                  : msg.content}
+                {/* If assistant message contains JSON article, show a notice with action button */}
+                {msg.role === 'assistant' && msg.content.includes('"slug"') && msg.content.includes('"content"') ? (
+                  <div className="space-y-2">
+                    <p className="text-green-400 font-black text-xs uppercase tracking-widest">✓ Artículo generado</p>
+                    <p className="text-white/60 text-sm">El borrador está listo para editar y publicar.</p>
+                    {onSwitchToEditor && (
+                      <button
+                        onClick={onSwitchToEditor}
+                        className="mt-2 bg-gold text-navy text-xs font-black uppercase tracking-widest px-4 py-2 hover:bg-white transition-colors"
+                      >
+                        Ver borrador →
+                      </button>
+                    )}
+                  </div>
+                ) : msg.content}
               </div>
             </div>
           </div>

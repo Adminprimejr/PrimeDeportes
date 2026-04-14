@@ -65,16 +65,35 @@ export async function POST(req: Request) {
     const result = await chat.sendMessage(lastMessage.content)
     const text = result.response.text()
 
-    // Robustly extract JSON article — look for the outermost JSON object containing "slug" and "content"
+    // Extract JSON article — handle markdown code blocks (```json...```) and raw JSON
     let article = null
-    const jsonMatch = text.match(/\{[\s\S]*?"slug"[\s\S]*?"content"[\s\S]*?\}(?=\s*$|\s*\n)/) || text.match(/\{[\s\S]*?"slug"[\s\S]*\}/)
-    if (jsonMatch) {
+    let searchText = text
+
+    // Strip markdown code fences if present
+    const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/)
+    if (fenceMatch) {
+      searchText = fenceMatch[1].trim()
+    }
+
+    // Find the outermost JSON object containing "slug"
+    const jsonStart = searchText.indexOf('{')
+    const jsonEnd = searchText.lastIndexOf('}')
+    if (jsonStart !== -1 && jsonEnd > jsonStart) {
       try {
-        article = JSON.parse(jsonMatch[0])
-        // Validate required fields exist
-        if (!article.slug || !article.title || !article.content) article = null
+        const candidate = searchText.slice(jsonStart, jsonEnd + 1)
+        const parsed = JSON.parse(candidate)
+        if (parsed.slug && parsed.title && parsed.content) {
+          article = parsed
+        }
       } catch {
-        article = null
+        // Try regex fallback
+        const jsonMatch = searchText.match(/\{[\s\S]*?"slug"[\s\S]*?"content"[\s\S]*\}/)
+        if (jsonMatch) {
+          try {
+            const parsed = JSON.parse(jsonMatch[0])
+            if (parsed.slug && parsed.title && parsed.content) article = parsed
+          } catch { /* ignore */ }
+        }
       }
     }
 
