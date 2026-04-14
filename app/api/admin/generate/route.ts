@@ -1,13 +1,6 @@
 import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
-import { verifyToken, COOKIE_NAME } from '@/lib/auth'
+import { isAuthed } from '@/lib/auth'
 import { GoogleGenerativeAI } from '@google/generative-ai'
-
-async function isAuthed(): Promise<boolean> {
-  const store = await cookies()
-  const token = store.get(COOKIE_NAME)?.value
-  return !!token && verifyToken(token)
-}
 
 const SYSTEM_PROMPT = `Eres el editor de contenido de Prime Deportes, un medio hispano especializado en el Mundial 2026.
 Tu rol es ayudar a Jorge Rodríguez a crear artículos editoriales de alta calidad en español optimizados para SEO.

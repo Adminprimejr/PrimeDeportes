@@ -1,13 +1,6 @@
 import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
-import { verifyToken, COOKIE_NAME } from '@/lib/auth'
+import { isAuthed } from '@/lib/auth'
 import { togglePublish, getArticleById } from '@/lib/articles'
-
-async function isAuthed(): Promise<boolean> {
-  const store = await cookies()
-  const token = store.get(COOKIE_NAME)?.value
-  return !!token && verifyToken(token)
-}
 
 interface Params { params: Promise<{ id: string }> }
 
