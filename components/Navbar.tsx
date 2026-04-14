@@ -24,7 +24,7 @@ export default function Navbar() {
           href="#inicio"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="text-3xl font-display font-black italic tracking-tighter flex items-center gap-2"
+          className="text-2xl sm:text-3xl font-display font-black italic tracking-tighter flex items-center gap-2"
         >
           <div className="bg-gold text-navy px-2 py-0.5 skew-x-[-15deg]">
             <span className="inline-block skew-x-[15deg]">PRIME</span>
@@ -88,7 +88,7 @@ export default function Navbar() {
                 key={item}
                 href={`#${item.toLowerCase()}`}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="text-5xl font-display font-black italic uppercase tracking-tighter text-white hover:text-gold transition-colors"
+                className="text-3xl sm:text-4xl font-display font-black italic uppercase tracking-tighter text-white hover:text-gold transition-colors"
               >
                 {item}
               </a>

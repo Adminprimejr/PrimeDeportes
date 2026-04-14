@@ -144,7 +144,7 @@ export default async function ArticlePage({ params }: Props) {
           </div>
 
           {/* In-article conversion CTA */}
-          <div className="mt-16 bg-gold/5 border-2 border-gold p-8 md:p-10">
+          <div className="mt-16 bg-gold/5 border-2 border-gold p-5 sm:p-8 md:p-10">
             <div className="text-gold font-black text-xs tracking-[0.4em] uppercase mb-3">¿LISTO PARA ANUNCIAR?</div>
             <h3 className="font-display font-black italic text-white text-2xl md:text-3xl leading-tight mb-4">
               Conecta tu marca con millones de fans hispanos durante el Mundial 2026

@@ -30,7 +30,7 @@ Si el usuario solo quiere conversar o pide aclaraciones, responde normalmente en
 Solo incluye el JSON cuando tengas el artículo completo listo.`
 
 // Ordered by preference — falls back automatically on 429/503
-const MODEL_FALLBACKS = ['gemini-1.5-flash', 'gemini-2.5-flash', 'gemini-1.5-flash-8b']
+const MODEL_FALLBACKS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash-latest']
 
 interface GeminiMessage {
   role: 'user' | 'assistant'

@@ -170,12 +170,12 @@ export default function HomeContent({ articles = [] }: { articles?: Article[] })
               <span className="inline-block skew-x-[15deg] animate-pulse">● LIVE: MUNDIAL 2026 PREVIEW</span>
             </div>
 
-            <h1 className="editorial-title text-6xl md:text-[11rem] mb-6">
+            <h1 className="editorial-title text-4xl sm:text-5xl md:text-7xl lg:text-[9rem] xl:text-[11rem] mb-6">
               DOMINA EL <br />
               <span className="text-gold">MUNDIAL</span>
             </h1>
 
-            <p className="text-xl md:text-3xl font-display font-bold italic text-white/80 max-w-4xl mx-auto mb-16 tracking-tight">
+            <p className="text-base sm:text-xl md:text-3xl font-display font-bold italic text-white/80 max-w-4xl mx-auto mb-16 tracking-tight">
               "La vitrina publicitaria más potente del deporte hispano. Tu marca, en el centro de la acción."
             </p>
 
@@ -183,7 +183,7 @@ export default function HomeContent({ articles = [] }: { articles?: Article[] })
               <motion.a
                 href="#packs"
                 whileHover={{ scale: 1.08, rotate: -1 }}
-                className="bg-gold text-navy px-12 py-6 font-display font-black text-xl italic uppercase tracking-tighter shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)]"
+                className="bg-gold text-navy px-6 sm:px-10 md:px-12 py-6 font-display font-black text-xl italic uppercase tracking-tighter shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)]"
               >
                 VER PAQUETES →
               </motion.a>
@@ -192,7 +192,7 @@ export default function HomeContent({ articles = [] }: { articles?: Article[] })
                 target="_blank"
                 rel="noopener noreferrer"
                 whileHover={{ scale: 1.08, rotate: 1 }}
-                className="border-4 border-white text-white px-12 py-6 font-display font-black text-xl italic uppercase tracking-tighter hover:bg-white hover:text-navy transition-all flex items-center gap-3"
+                className="border-4 border-white text-white px-6 sm:px-10 md:px-12 py-6 font-display font-black text-xl italic uppercase tracking-tighter hover:bg-white hover:text-navy transition-all flex items-center gap-3"
               >
                 <Calendar size={20} />
                 AGENDA 15 MIN GRATIS
@@ -203,7 +203,7 @@ export default function HomeContent({ articles = [] }: { articles?: Article[] })
           </motion.div>
         </div>
 
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[30rem] font-black text-stroke pointer-events-none opacity-10 select-none">
+        <div className="hidden sm:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[15rem] md:text-[30rem] font-black text-stroke pointer-events-none opacity-10 select-none">
           PRIME
         </div>
       </section>
@@ -254,9 +254,9 @@ export default function HomeContent({ articles = [] }: { articles?: Article[] })
       </section>
 
       {/* ── JORGE SECTION ────────────────────────────────────────────────── */}
-      <section id="nosotros" className="py-40 relative overflow-hidden">
+      <section id="nosotros" className="py-20 md:py-32 lg:py-40 relative overflow-hidden">
         <div className="container mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-24 items-center">
+          <div className="grid md:grid-cols-2 gap-12 lg:gap-24 items-center">
             <motion.div
               initial={{ opacity: 0, x: -100 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -331,7 +331,7 @@ export default function HomeContent({ articles = [] }: { articles?: Article[] })
       </section>
 
       {/* ── PACKS ────────────────────────────────────────────────────────── */}
-      <section id="packs" className="py-40 bg-white/[0.02] skew-section">
+      <section id="packs" className="py-20 md:py-32 lg:py-40 bg-white/[0.02] skew-section">
         <div className="container mx-auto px-6 skew-content">
           <div className="flex flex-col md:flex-row justify-between items-end mb-24 gap-8">
             <div className="max-w-2xl">
@@ -349,7 +349,7 @@ export default function HomeContent({ articles = [] }: { articles?: Article[] })
                 key={i}
                 whileHover={{ y: -16 }}
                 transition={{ type: 'spring', stiffness: 300 }}
-                className={`p-10 border-t-8 flex flex-col h-full ${pack.featured ? 'border-gold bg-gold/5' : 'border-white/20 bg-white/5'}`}
+                className={`p-6 md:p-10 border-t-8 flex flex-col h-full ${pack.featured ? 'border-gold bg-gold/5' : 'border-white/20 bg-white/5'}`}
               >
                 <div className={`text-[10px] font-black tracking-widest mb-6 ${pack.featured ? 'text-gold' : 'text-white/40'}`}>
                   {pack.coverage}
@@ -408,7 +408,7 @@ export default function HomeContent({ articles = [] }: { articles?: Article[] })
       </section>
 
       {/* ── CREDIBILITY / MARKET DATA ─────────────────────────────────────── */}
-      <section className="py-40 bg-navy border-y-8 border-white/5">
+      <section className="py-20 md:py-32 lg:py-40 bg-navy border-y-8 border-white/5">
         <div className="container mx-auto px-6">
           <div className="text-center mb-20">
             <div className="text-accent-red font-black tracking-[0.5em] mb-4 uppercase text-sm">DATOS VERIFICADOS</div>
@@ -480,7 +480,7 @@ export default function HomeContent({ articles = [] }: { articles?: Article[] })
       </section>
 
       {/* ── WHY US ───────────────────────────────────────────────────────── */}
-      <section className="py-40">
+      <section className="py-20 md:py-32 lg:py-40">
         <div className="container mx-auto px-6">
           <div className="text-center mb-20">
             <h2 className="editorial-title text-4xl md:text-7xl">POR QUÉ <span className="text-gold">PRIME DEPORTES</span></h2>
@@ -527,7 +527,7 @@ export default function HomeContent({ articles = [] }: { articles?: Article[] })
       <Testimonials />
 
       {/* ── FAQ ──────────────────────────────────────────────────────────── */}
-      <section className="py-40 bg-navy-dark border-t-8 border-white/5">
+      <section className="py-20 md:py-32 lg:py-40 bg-navy-dark border-t-8 border-white/5">
         <div className="container mx-auto px-6 max-w-4xl">
           <div className="text-center mb-20">
             <div className="text-gold font-black tracking-[0.5em] mb-4 uppercase text-sm">RESOLVEMOS TUS DUDAS</div>
@@ -577,7 +577,7 @@ export default function HomeContent({ articles = [] }: { articles?: Article[] })
       </section>
 
       {/* ── NOTICIAS ─────────────────────────────────────────────────────── */}
-      <section id="noticias" className="py-40 bg-navy-dark border-t-8 border-white/5">
+      <section id="noticias" className="py-20 md:py-32 lg:py-40 bg-navy-dark border-t-8 border-white/5">
         <div className="container mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-end mb-24 gap-8">
             <div>
@@ -636,9 +636,9 @@ export default function HomeContent({ articles = [] }: { articles?: Article[] })
       </section>
 
       {/* ── CONTACT ──────────────────────────────────────────────────────── */}
-      <section id="contacto" className="py-40 bg-navy-dark relative border-t-8 border-gold">
+      <section id="contacto" className="py-20 md:py-32 lg:py-40 bg-navy-dark relative border-t-8 border-gold">
         <div className="container mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-24">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-24">
             <div>
               <h2 className="editorial-title text-6xl md:text-9xl mb-12">
                 RESERVA <br /><span className="text-gold">TU LUGAR</span>
@@ -725,7 +725,7 @@ export default function HomeContent({ articles = [] }: { articles?: Article[] })
         aria-label="Contactar por WhatsApp"
         whileHover={{ scale: 1.12, rotate: 8 }}
         whileTap={{ scale: 0.92 }}
-        className="fixed bottom-20 right-8 w-20 h-20 bg-[#25D366] rounded-full flex items-center justify-center shadow-2xl z-[110] border-4 border-white"
+        className="fixed bottom-20 right-8 w-14 h-14 md:w-20 md:h-20 bg-[#25D366] rounded-full flex items-center justify-center shadow-2xl z-[110] border-4 border-white"
       >
         <Phone className="text-white" size={32} fill="white" />
       </motion.a>

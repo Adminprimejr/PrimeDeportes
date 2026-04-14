@@ -41,7 +41,7 @@ export default function Countdown() {
             initial={{ scale: 1.15, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.2 }}
-            className="text-4xl md:text-7xl font-display font-black italic text-white leading-none tabular-nums"
+            className="text-2xl sm:text-4xl md:text-7xl font-display font-black italic text-white leading-none tabular-nums"
           >
             {String(value).padStart(2, '0')}
           </motion.div>

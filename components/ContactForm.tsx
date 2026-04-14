@@ -31,9 +31,9 @@ export default function ContactForm() {
 
   if (status === 'success') {
     return (
-      <div className="bg-white/5 p-12 border-2 border-gold/30 flex flex-col items-center justify-center gap-6 min-h-[400px] text-center">
+      <div className="bg-white/5 p-6 sm:p-10 md:p-12 border-2 border-gold/30 flex flex-col items-center justify-center gap-6 min-h-[400px] text-center">
         <CheckCircle2 size={64} className="text-gold" />
-        <h3 className="text-3xl font-display font-black italic">¡Solicitud Enviada!</h3>
+        <h3 className="text-2xl sm:text-3xl font-display font-black italic">¡Solicitud Enviada!</h3>
         <p className="text-white/60 font-bold max-w-sm">
           Revisaremos tu solicitud y te contactaremos en menos de 24 horas.
         </p>
@@ -53,7 +53,7 @@ export default function ContactForm() {
   const labelClass = 'text-[10px] font-black text-gold uppercase tracking-widest'
 
   return (
-    <div className="bg-white/5 p-12 border-2 border-white/10">
+    <div className="bg-white/5 p-6 sm:p-10 md:p-12 border-2 border-white/10">
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-2">

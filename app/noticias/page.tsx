@@ -85,7 +85,7 @@ export default function NoticiasPage() {
                   <div className="w-full h-full bg-white/5" />
                 )}
               </div>
-              <div className="p-10 lg:p-16 flex flex-col justify-center bg-navy-dark">
+              <div className="p-5 sm:p-8 lg:p-16 flex flex-col justify-center bg-navy-dark">
                 <div className="flex items-center gap-4 mb-6">
                   <span className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest ${CATEGORY_COLORS[featured.category] ?? 'bg-white/20 text-white'}`}>
                     {featured.category}

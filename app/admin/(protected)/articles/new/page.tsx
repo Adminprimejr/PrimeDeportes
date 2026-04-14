@@ -67,9 +67,9 @@ export default function NewArticlePage() {
   if (!hydrated) return null
 
   return (
-    <div className="flex flex-col" style={{ height: 'calc(100vh - 120px)' }}>
+    <div className="flex flex-col min-h-screen lg:h-[calc(100vh-120px)]">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 shrink-0">
+      <div className="flex flex-wrap items-center justify-between mb-6 shrink-0 gap-4">
         <div>
           <h1 className="font-display font-black italic text-white text-3xl mb-0.5">
             NUEVO <span className="text-gold">ARTÍCULO</span>
@@ -87,9 +87,9 @@ export default function NewArticlePage() {
       </div>
 
       {/* Hybrid layout */}
-      <div className="flex gap-6 flex-1 min-h-0">
+      <div className="flex flex-col lg:flex-row gap-6 flex-1 min-h-0">
         {/* Editor — always visible, grows to fill space */}
-        <div className={`flex flex-col overflow-y-auto transition-all duration-200 ${aiOpen ? 'w-[58%]' : 'w-full'}`}>
+        <div className={`flex flex-col overflow-y-auto transition-all duration-200 ${aiOpen ? 'w-full lg:w-[58%]' : 'w-full'}`}>
           <ArticleEditor
             draft={draft}
             onChange={handleDraftChange}
@@ -100,7 +100,7 @@ export default function NewArticlePage() {
 
         {/* AI sidebar */}
         {aiOpen && (
-          <div className="w-[42%] bg-white/5 border border-white/10 p-5 flex flex-col overflow-hidden shrink-0">
+          <div className="w-full lg:w-[42%] bg-white/5 border border-white/10 p-5 flex flex-col overflow-hidden lg:shrink-0">
             <AIChat
               onArticleReady={handleArticleReady}
               currentDraft={draft}
