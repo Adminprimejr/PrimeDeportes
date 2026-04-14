@@ -12,8 +12,8 @@ const articles = [
     meta_desc: 'Descubre las 16 sedes del Mundial 2026 en EE.UU., Canadá y México. Estadios, ciudades y oportunidades para marcas durante el torneo más grande de la historia.',
     keywords: 'sedes Copa del Mundo 2026, estadios Mundial 2026, ciudades sede Mundial, FIFA World Cup 2026 venues',
     category: 'SEDES',
-    image_url: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1200&q=80',
-    image_alt: 'Estadio iluminado para el Mundial 2026',
+    image_url: 'https://images.unsplash.com/photo-1540747913346-19212a4cf528?auto=format&fit=crop&w=1200&q=80',
+    image_alt: 'Estadio iluminado en la noche para la Copa del Mundo 2026',
     author: 'Jorge Rodríguez',
     published: 1,
     content: `# Las 16 Sedes del Mundial 2026: Guía Completa para Fanáticos y Marcas
@@ -68,8 +68,8 @@ Los anunciantes que se posicionen en estos mercados antes del torneo capturarán
     meta_desc: 'El mercado hispano tiene $3 billones en poder adquisitivo y 73% de fanáticos del fútbol. Descubre cómo tu marca puede capitalizar el Mundial 2026 en español.',
     keywords: 'publicidad Copa del Mundo 2026, mercado hispano Mundial, anunciantes Mundial 2026, marketing hispano fútbol',
     category: 'MARKETING',
-    image_url: 'https://images.unsplash.com/photo-1551958219-acbc608c6377?auto=format&fit=crop&w=1200&q=80',
-    image_alt: 'Fan Zone del Mundial 2026 con fanáticos hispanos',
+    image_url: 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1200&q=80',
+    image_alt: 'Fanáticos hispanos celebrando un gol del Mundial',
     author: 'Jorge Rodríguez',
     published: 1,
     content: `# El Mercado Hispano y el Mundial 2026: $3 Billones en Juego para las Marcas
@@ -130,8 +130,8 @@ Los cupos para el torneo son limitados. Las marcas que hoy no han asegurado su e
     meta_desc: 'Análisis editorial de los grupos del Mundial 2026. Favoritos, sorpresas y los partidos que marcarán el torneo. Cobertura Prime Deportes.',
     keywords: 'grupos Copa del Mundo 2026, Mundial 2026 grupos, fixture Mundial 2026, selecciones Mundial 2026',
     category: 'ANÁLISIS',
-    image_url: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1200&q=80',
-    image_alt: 'Pelota de fútbol del Mundial 2026',
+    image_url: 'https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?auto=format&fit=crop&w=1200&q=80',
+    image_alt: 'Jugadores disputando un partido de la Copa del Mundo 2026',
     author: 'Jorge Rodríguez',
     published: 1,
     content: `# Grupos Copa del Mundo 2026: Análisis Completo
@@ -185,8 +185,8 @@ El Mundial 2026 empieza el 11 de junio. Faltan días. La conversación empieza h
     meta_desc: 'Todas las formas de ver la Copa del Mundo 2026 en español en EE.UU.: Telemundo, ViX, streaming y más. Guía completa de Prime Deportes.',
     keywords: 'ver Mundial 2026 español, Telemundo Mundial 2026, ViX Copa del Mundo, transmisión Mundial 2026 EE.UU.',
     category: 'NOTICIAS',
-    image_url: 'https://images.unsplash.com/photo-1518091043644-c1d445bcc97a?auto=format&fit=crop&w=1200&q=80',
-    image_alt: 'Fanáticos viendo el Mundial 2026 en casa',
+    image_url: 'https://images.unsplash.com/photo-1593508512255-86ab42a8e620?auto=format&fit=crop&w=1200&q=80',
+    image_alt: 'Familia hispana viendo el Mundial 2026 en streaming',
     author: 'Jorge Rodríguez',
     published: 1,
     content: `# ¿Cómo Ver el Mundial 2026 en Español desde Estados Unidos?
