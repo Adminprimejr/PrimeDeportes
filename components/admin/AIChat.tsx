@@ -39,6 +39,43 @@ const STARTER_PROMPTS = [
   'Artículo sobre las sedes del Mundial en Estados Unidos',
 ]
 
+/** Mirror of server-side sanitizer — fix literal newlines in JSON strings */
+function sanitizeJsonString(str: string): string {
+  let result = ''
+  let inString = false
+  let escaped = false
+  for (let i = 0; i < str.length; i++) {
+    const ch = str[i]
+    if (escaped) { result += ch; escaped = false; continue }
+    if (ch === '\\' && inString) { result += ch; escaped = true; continue }
+    if (ch === '"') { result += ch; inString = !inString; continue }
+    if (inString) {
+      if (ch === '\n') { result += '\\n'; continue }
+      if (ch === '\r') { result += '\\r'; continue }
+      if (ch === '\t') { result += '\\t'; continue }
+    }
+    result += ch
+  }
+  return result
+}
+
+function tryExtractArticle(text: string): ArticleDraft | null {
+  let searchText = text
+  const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/)
+  if (fenceMatch) searchText = fenceMatch[1].trim()
+  const jsonStart = searchText.indexOf('{')
+  const jsonEnd = searchText.lastIndexOf('}')
+  if (jsonStart === -1 || jsonEnd <= jsonStart) return null
+  const rawJson = searchText.slice(jsonStart, jsonEnd + 1)
+  for (const attempt of [rawJson, sanitizeJsonString(rawJson)]) {
+    try {
+      const parsed = JSON.parse(attempt)
+      if (parsed.slug && parsed.title && parsed.content) return parsed as ArticleDraft
+    } catch { /* continue */ }
+  }
+  return null
+}
+
 export default function AIChat({ onArticleReady, currentDraft, storageKey = 'prime-article-chat' }: Props) {
   const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE])
   const [input, setInput] = useState('')
@@ -46,13 +83,22 @@ export default function AIChat({ onArticleReady, currentDraft, storageKey = 'pri
   const [lastArticle, setLastArticle] = useState<ArticleDraft | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
-  // Restore chat from localStorage on mount
+  // Restore chat + lastArticle from localStorage on mount
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(storageKey)
-      if (saved) {
-        const parsed = JSON.parse(saved)
-        if (Array.isArray(parsed) && parsed.length > 0) setMessages(parsed)
+      const savedChat = localStorage.getItem(storageKey)
+      if (savedChat) {
+        const parsed = JSON.parse(savedChat)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMessages(parsed)
+          // Re-extract lastArticle from the most recent assistant message that has JSON
+          for (let i = parsed.length - 1; i >= 0; i--) {
+            if (parsed[i].role === 'assistant') {
+              const extracted = tryExtractArticle(parsed[i].content)
+              if (extracted) { setLastArticle(extracted); break }
+            }
+          }
+        }
       }
     } catch { /* ignore */ }
   }, [storageKey])
@@ -93,9 +139,11 @@ export default function AIChat({ onArticleReady, currentDraft, storageKey = 'pri
 
       setMessages((prev) => [...prev, { role: 'assistant', content: data.text }])
 
-      if (data.article) {
-        setLastArticle(data.article)
-        onArticleReady(data.article)
+      // Server already extracted, or try client-side extraction as fallback
+      const article = data.article ?? tryExtractArticle(data.text)
+      if (article) {
+        setLastArticle(article)
+        onArticleReady(article)
       }
     } catch {
       setMessages((prev) => [...prev, { role: 'assistant', content: 'Error de conexión. Intenta de nuevo.' }])
@@ -188,14 +236,23 @@ ${currentDraft.content}`
               }`}>
                 {msg.role === 'assistant' && msg.content.includes('"slug"') && msg.content.includes('"content"') ? (
                   <div className="space-y-2">
-                    <p className="text-green-400 font-black text-[11px] uppercase tracking-widest">✓ Artículo listo</p>
-                    <p className="text-white/60 text-xs">Aplicado al editor. Edita los campos y publica cuando estés listo.</p>
-                    <button
-                      onClick={handleApplyDraft}
-                      className="mt-1 bg-gold text-navy text-[11px] font-black uppercase tracking-widest px-3 py-1.5 hover:bg-white transition-colors"
-                    >
-                      Aplicar al editor →
-                    </button>
+                    {lastArticle ? (
+                      <>
+                        <p className="text-green-400 font-black text-[11px] uppercase tracking-widest">✓ Artículo listo</p>
+                        <p className="text-white/60 text-xs">Aplicado al editor. Edita los campos y publica cuando estés listo.</p>
+                        <button
+                          onClick={handleApplyDraft}
+                          className="mt-1 bg-gold text-navy text-[11px] font-black uppercase tracking-widest px-3 py-1.5 hover:bg-white transition-colors"
+                        >
+                          Aplicar al editor →
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-yellow-400 font-black text-[11px] uppercase tracking-widest">⚠ JSON no pudo parsearse</p>
+                        <p className="text-white/60 text-xs">Pide al asistente que reintente o regenere el artículo.</p>
+                      </>
+                    )}
                   </div>
                 ) : msg.content}
               </div>

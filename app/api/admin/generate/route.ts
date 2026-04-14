@@ -62,27 +62,50 @@ interface GeminiMessage {
   content: string
 }
 
+/** Escape literal newlines/tabs inside JSON string values — common Gemini output issue */
+function sanitizeJsonString(str: string): string {
+  let result = ''
+  let inString = false
+  let escaped = false
+  for (let i = 0; i < str.length; i++) {
+    const ch = str[i]
+    if (escaped) { result += ch; escaped = false; continue }
+    if (ch === '\\' && inString) { result += ch; escaped = true; continue }
+    if (ch === '"') { result += ch; inString = !inString; continue }
+    if (inString) {
+      if (ch === '\n') { result += '\\n'; continue }
+      if (ch === '\r') { result += '\\r'; continue }
+      if (ch === '\t') { result += '\\t'; continue }
+    }
+    result += ch
+  }
+  return result
+}
+
 function extractArticle(text: string) {
+  // Strip code fences if present
   let searchText = text
   const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/)
   if (fenceMatch) searchText = fenceMatch[1].trim()
 
   const jsonStart = searchText.indexOf('{')
   const jsonEnd = searchText.lastIndexOf('}')
-  if (jsonStart !== -1 && jsonEnd > jsonStart) {
-    try {
-      const parsed = JSON.parse(searchText.slice(jsonStart, jsonEnd + 1))
-      if (parsed.slug && parsed.title && parsed.content) return parsed
-    } catch {
-      const jsonMatch = searchText.match(/\{[\s\S]*?"slug"[\s\S]*?"content"[\s\S]*\}/)
-      if (jsonMatch) {
-        try {
-          const parsed = JSON.parse(jsonMatch[0])
-          if (parsed.slug && parsed.title && parsed.content) return parsed
-        } catch { /* ignore */ }
-      }
-    }
-  }
+  if (jsonStart === -1 || jsonEnd <= jsonStart) return null
+
+  const rawJson = searchText.slice(jsonStart, jsonEnd + 1)
+
+  // Try 1: raw parse (ideal case)
+  try {
+    const parsed = JSON.parse(rawJson)
+    if (parsed.slug && parsed.title && parsed.content) return parsed
+  } catch { /* fall through */ }
+
+  // Try 2: sanitize literal newlines inside strings, then parse
+  try {
+    const parsed = JSON.parse(sanitizeJsonString(rawJson))
+    if (parsed.slug && parsed.title && parsed.content) return parsed
+  } catch { /* fall through */ }
+
   return null
 }
 
