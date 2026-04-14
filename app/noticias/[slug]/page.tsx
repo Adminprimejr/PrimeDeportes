@@ -5,6 +5,9 @@ import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { getArticleBySlug, getPublishedArticles } from '@/lib/articles'
+import Navbar from '@/components/Navbar'
+import SiteFooter from '@/components/SiteFooter'
+import AuthorBio from '@/components/AuthorBio'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -26,20 +29,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: article.meta_title,
     description: article.meta_desc,
     keywords: article.keywords,
-    authors: [{ name: article.author }],
+    authors: [{ name: article.author, url: `${siteUrl}/noticias` }],
     openGraph: {
       title: article.meta_title,
       description: article.meta_desc,
       type: 'article',
       publishedTime: article.created_at,
+      modifiedTime: article.updated_at,
       authors: [article.author],
-      images: article.image_url ? [{ url: article.image_url, alt: article.image_alt || article.title }] : [],
+      siteName: 'Prime Deportes',
+      images: article.image_url ? [{ url: article.image_url, width: 1200, height: 630, alt: article.image_alt || article.title }] : [],
     },
     twitter: {
       card: 'summary_large_image',
       title: article.meta_title,
       description: article.meta_desc,
       images: article.image_url ? [article.image_url] : [],
+      creator: '@primedeportes',
     },
     alternates: {
       canonical: `${siteUrl}/noticias/${slug}`,
@@ -61,34 +67,78 @@ export default async function ArticlePage({ params }: Props) {
   if (!article) notFound()
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://primedeportes.com'
+  const articleUrl = `${siteUrl}/noticias/${slug}`
 
-  const jsonLd = {
+  const breadcrumbSchema = {
     '@context': 'https://schema.org',
-    '@type': 'NewsArticle',
-    headline: article.title,
-    description: article.meta_desc,
-    datePublished: article.created_at,
-    dateModified: article.updated_at,
-    author: { '@type': 'Person', name: article.author },
-    publisher: {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Inicio', item: siteUrl },
+      { '@type': 'ListItem', position: 2, name: 'Noticias', item: `${siteUrl}/noticias` },
+      { '@type': 'ListItem', position: 3, name: article.title, item: articleUrl },
+    ],
+  }
+
+  const personSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    '@id': `${siteUrl}/#jorge-rodriguez`,
+    name: 'Jorge Rodríguez',
+    jobTitle: 'Director General',
+    worksFor: {
       '@type': 'NewsMediaOrganization',
       name: 'Prime Deportes',
       url: siteUrl,
     },
-    mainEntityOfPage: { '@type': 'WebPage', '@id': `${siteUrl}/noticias/${slug}` },
+    description: 'Periodista deportivo con más de 15 años cubriendo el fútbol latinoamericano en Estados Unidos y Colombia. Director General de Prime Deportes.',
+    image: `${siteUrl}/jorge.jpg`,
+    sameAs: [
+      'https://instagram.com/primedeportes',
+      'https://youtube.com/primedeportes',
+    ],
+    knowsAbout: ['Fútbol', 'Copa del Mundo 2026', 'Mercado hispano', 'Medios deportivos', 'Marketing deportivo'],
+    url: `${siteUrl}/noticias`,
+  }
+
+  const articleSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'NewsArticle',
+    headline: article.title,
+    description: article.meta_desc,
+    keywords: article.keywords,
+    datePublished: article.created_at,
+    dateModified: article.updated_at,
+    url: articleUrl,
+    author: { '@id': `${siteUrl}/#jorge-rodriguez` },
+    publisher: {
+      '@type': 'NewsMediaOrganization',
+      name: 'Prime Deportes',
+      url: siteUrl,
+      logo: { '@type': 'ImageObject', url: `${siteUrl}/og-image.jpg` },
+    },
+    mainEntityOfPage: { '@type': 'WebPage', '@id': articleUrl },
+    inLanguage: 'es',
     ...(article.image_url && {
-      image: { '@type': 'ImageObject', url: article.image_url, description: article.image_alt },
+      image: {
+        '@type': 'ImageObject',
+        url: article.image_url,
+        description: article.image_alt || article.title,
+      },
     }),
   }
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
+
+      <Navbar />
 
       <main className="min-h-screen bg-navy-dark pt-28">
         {/* Hero image */}
         {article.image_url && (
-          <div className="relative w-full h-[50vh] md:h-[60vh] overflow-hidden">
+          <div className="relative w-full h-[45vh] md:h-[55vh] overflow-hidden">
             <Image
               src={article.image_url}
               alt={article.image_alt || article.title}
@@ -101,14 +151,14 @@ export default async function ArticlePage({ params }: Props) {
           </div>
         )}
 
-        <div className="container mx-auto px-6 max-w-4xl pb-40">
+        <div className="container mx-auto px-6 max-w-4xl pb-20">
           {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-xs text-white/40 font-black tracking-widest uppercase mb-8 mt-10">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-white/30 font-black tracking-widest uppercase mb-8 mt-10">
             <Link href="/" className="hover:text-gold transition-colors">Inicio</Link>
             <span>/</span>
             <Link href="/noticias" className="hover:text-gold transition-colors">Noticias</Link>
             <span>/</span>
-            <span className="text-white/60 truncate max-w-[200px]">{article.title}</span>
+            <span className="text-white/50 truncate max-w-[200px]">{article.category}</span>
           </nav>
 
           {/* Category + date */}
@@ -116,20 +166,28 @@ export default async function ArticlePage({ params }: Props) {
             <span className="bg-gold text-navy px-3 py-1 text-[10px] font-black uppercase tracking-widest">
               {article.category}
             </span>
-            <time className="text-gold font-black text-[10px] tracking-widest">{formatDate(article.created_at)}</time>
+            <time dateTime={article.created_at} className="text-gold font-black text-[10px] tracking-widest">
+              {formatDate(article.created_at)}
+            </time>
           </div>
 
           {/* Title */}
-          <h1 className="font-display font-black italic text-white leading-none mb-6" style={{ fontSize: 'clamp(2.5rem, 6vw, 5rem)' }}>
+          <h1 className="font-display font-black italic text-white leading-none mb-6" style={{ fontSize: 'clamp(2.2rem, 6vw, 5rem)' }}>
             {article.title}
           </h1>
 
-          {/* Author */}
-          <p className="text-white/50 text-sm font-black tracking-widest uppercase mb-12 pb-12 border-b border-white/10">
-            Por {article.author}
-          </p>
+          {/* Author line */}
+          <div className="flex items-center gap-3 mb-12 pb-12 border-b border-white/10">
+            <div className="relative w-10 h-10 overflow-hidden border border-gold/50 shrink-0">
+              <Image src="/jorge.jpg" alt="Jorge Rodríguez" fill className="object-cover object-top" sizes="40px" />
+            </div>
+            <div>
+              <p className="text-white text-sm font-black">Jorge Rodríguez</p>
+              <p className="text-white/40 text-[10px] font-black tracking-widest uppercase">Director General · Prime Deportes</p>
+            </div>
+          </div>
 
-          {/* Content */}
+          {/* Article content */}
           <div className="prose prose-invert prose-lg max-w-none
             prose-headings:font-display prose-headings:italic prose-headings:font-black prose-headings:text-white
             prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6 prose-h2:border-l-4 prose-h2:border-gold prose-h2:pl-6
@@ -143,7 +201,7 @@ export default async function ArticlePage({ params }: Props) {
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{article.content}</ReactMarkdown>
           </div>
 
-          {/* In-article conversion CTA */}
+          {/* Conversion CTA */}
           <div className="mt-16 bg-gold/5 border-2 border-gold p-5 sm:p-8 md:p-10">
             <div className="text-gold font-black text-xs tracking-[0.4em] uppercase mb-3">¿LISTO PARA ANUNCIAR?</div>
             <h3 className="font-display font-black italic text-white text-2xl md:text-3xl leading-tight mb-4">
@@ -170,6 +228,9 @@ export default async function ArticlePage({ params }: Props) {
             </div>
           </div>
 
+          {/* Author bio */}
+          <AuthorBio />
+
           {/* Back link */}
           <div className="mt-12 pt-8 border-t border-white/10">
             <Link
@@ -181,6 +242,8 @@ export default async function ArticlePage({ params }: Props) {
           </div>
         </div>
       </main>
+
+      <SiteFooter />
     </>
   )
 }
