@@ -74,3 +74,120 @@
 .editorial-title {
   @apply font-display font-black italic uppercase leading-[0.85] tracking-tighter;
 }
+
+/* ─── ESPN-quality Article Prose ─────────────────────────────────────────── */
+
+/* Drop cap on first paragraph */
+.article-body > p:first-of-type::first-letter {
+  float: left;
+  font-family: var(--font-display), sans-serif;
+  font-size: 5.5rem;
+  font-weight: 900;
+  font-style: italic;
+  line-height: 0.75;
+  padding-right: 0.15em;
+  padding-top: 0.05em;
+  color: #F4C430;
+}
+
+/* Section divider between h2 blocks */
+.article-body h2 {
+  position: relative;
+  padding-top: 2.5rem;
+}
+.article-body h2::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3rem;
+  height: 3px;
+  background: #F4C430;
+}
+
+/* Pull-quote blockquote — ESPN sidebar style */
+.article-body blockquote {
+  position: relative;
+  padding: 1.5rem 1.5rem 1.5rem 2rem;
+  margin: 2.5rem 0;
+  background: rgba(244, 196, 48, 0.04);
+  border-left: 4px solid #F4C430;
+}
+.article-body blockquote::before {
+  content: '\201C';
+  position: absolute;
+  top: -0.3rem;
+  left: 0.75rem;
+  font-size: 4rem;
+  font-family: Georgia, serif;
+  color: #F4C430;
+  opacity: 0.4;
+  line-height: 1;
+  pointer-events: none;
+}
+.article-body blockquote p {
+  font-style: italic;
+  font-size: 1.2rem !important;
+  line-height: 1.6 !important;
+  color: rgba(255,255,255,0.85) !important;
+  margin: 0 !important;
+}
+
+/* Stat callout — bold numbers in paragraphs */
+.article-body strong {
+  color: #F4C430;
+  font-weight: 900;
+}
+
+/* Ordered lists — ranking style */
+.article-body ol {
+  counter-reset: article-counter;
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0;
+}
+.article-body ol li {
+  counter-increment: article-counter;
+  position: relative;
+  padding-left: 3rem;
+  margin-bottom: 0.875rem;
+  color: rgba(255,255,255,0.8);
+}
+.article-body ol li::before {
+  content: counter(article-counter);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 2rem;
+  height: 2rem;
+  background: #F4C430;
+  color: #050B14;
+  font-weight: 900;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Unordered list — bullet style */
+.article-body ul {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0;
+}
+.article-body ul li {
+  position: relative;
+  padding-left: 1.5rem;
+  margin-bottom: 0.625rem;
+  color: rgba(255,255,255,0.8);
+}
+.article-body ul li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.6em;
+  width: 0.5rem;
+  height: 0.5rem;
+  background: #F4C430;
+  transform: rotate(45deg);
+}

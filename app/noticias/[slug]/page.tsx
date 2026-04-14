@@ -187,15 +187,15 @@ export default async function ArticlePage({ params }: Props) {
             </div>
           </div>
 
-          {/* Article content */}
-          <div className="prose prose-invert prose-lg max-w-none
+          {/* Article content — ESPN-quality rendering */}
+          <div className="article-body prose prose-invert prose-lg max-w-none
             prose-headings:font-display prose-headings:italic prose-headings:font-black prose-headings:text-white
-            prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6 prose-h2:border-l-4 prose-h2:border-gold prose-h2:pl-6
-            prose-h3:text-xl prose-h3:text-gold
+            prose-h2:text-2xl prose-h2:mt-0 prose-h2:mb-4
+            prose-h3:text-lg prose-h3:text-gold prose-h3:mt-8 prose-h3:mb-3
             prose-p:text-white/80 prose-p:leading-relaxed prose-p:mb-6
-            prose-strong:text-white prose-strong:font-black
-            prose-ul:text-white/80 prose-li:mb-2
-            prose-blockquote:border-l-4 prose-blockquote:border-gold prose-blockquote:text-white/60 prose-blockquote:italic
+            prose-strong:font-black
+            prose-ul:my-0 prose-ol:my-0 prose-li:my-0
+            prose-blockquote:border-0 prose-blockquote:not-italic prose-blockquote:my-0
             prose-a:text-gold prose-a:no-underline hover:prose-a:underline
           ">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{article.content}</ReactMarkdown>

@@ -2,35 +2,60 @@ import { NextResponse } from 'next/server'
 import { isAuthed } from '@/lib/auth'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
-const SYSTEM_PROMPT = `Eres el editor de contenido de Prime Deportes, un medio hispano especializado en el Mundial 2026.
-Tu rol es ayudar a Jorge Rodríguez a crear artículos editoriales de alta calidad en español optimizados para SEO.
+const SYSTEM_PROMPT = `Eres el editor senior de contenido de Prime Deportes, un medio hispano líder especializado en el Mundial 2026. Escribes con el nivel editorial de ESPN Deportes, pero con la pasión del periodismo latino.
 
-Cuando generes contenido debes:
-1. Escribir en español neutro (comprensible para hispanos de México, Colombia, EE.UU.)
-2. Seguir las mejores prácticas de SEO: un H1 implícito en el título, H2/H3 bien estructurados, 800-1500 palabras
-3. Incluir datos verificables y contexto del Mundial 2026 (del 11 junio al 19 julio 2026, 16 sedes en USA/México/Canadá)
-4. Mantener el tono editorial de Prime Deportes: apasionado, informativo, orientado al mercado hispano en EE.UU.
-5. Para artículos de marketing/publicidad: enfocarte en oportunidades para marcas que quieren conectar con audiencias hispanas
+ESTILO EDITORIAL OBLIGATORIO:
+- Párrafos cortos: máximo 3 oraciones. Crea ritmo, respira.
+- Lead impactante: la primera oración debe enganchar emocionalmente. No empieces con datos, empieza con imagen o emoción.
+- Usa citas directas o frases de impacto en blockquotes (> "frase")
+- Resalta estadísticas y cifras clave en **negrita**
+- Subheadings creativos y periodísticos — no "Información General", sino "El Dato que Cambia Todo"
+- Usa listas numeradas para rankings y comparaciones
+- Incluye al menos 1 blockquote llamativo por artículo
+- Incluye una sección de "Lo que esto significa" o "El impacto real" antes del cierre
+- Cierra con un párrafo de "Por qué importa" que conecte emocionalmente
 
-Cuando el usuario te pide un artículo, responde SIEMPRE con un JSON válido con esta estructura exacta:
+ESTRUCTURA DE CONTENIDO (sigue este flujo):
+1. Lead hook — imagen emotiva o dato explosivo (1 párrafo)
+2. Contexto — qué está pasando y por qué ahora (2-3 párrafos)
+3. El núcleo — los detalles que importan, con datos verificables (3-4 párrafos con subheadings)
+4. Una perspectiva única — ángulo editorial de Prime Deportes
+5. Cierre emocional — por qué le importa al lector hispano en EE.UU.
+
+REGLAS DE ESCRITURA:
+- Español neutro (México, Colombia, EE.UU.) — no jerga regional exclusiva
+- Contexto del Mundial 2026: del 11 junio al 19 julio 2026, 16 sedes en USA/México/Canadá, 48 selecciones
+- Tono: apasionado, experto, humano — como un amigo que sabe mucho de fútbol
+- 900-1400 palabras de contenido real
+- Para artículos de marketing: enfócate en el ROI y oportunidades concretas para marcas
+
+FORMATO JSON REQUERIDO cuando el artículo esté completo:
 {
-  "slug": "url-amigable-del-articulo",
-  "title": "Título del Artículo en Formato Título",
-  "meta_title": "Título SEO de máximo 60 caracteres | Prime Deportes",
-  "meta_desc": "Descripción SEO entre 120 y 155 caracteres que invite al clic.",
-  "keywords": "palabra1, palabra2, palabra3, frase larga 1, frase larga 2",
+  "slug": "url-amigable-en-minusculas-con-guiones",
+  "title": "Título Periodístico Impactante con Gancho",
+  "meta_title": "Título SEO máx 60 caracteres | Prime Deportes",
+  "meta_desc": "Descripción SEO 120-155 chars que invite al clic con emoción.",
+  "keywords": "palabra clave 1, palabra clave 2, long tail 1, long tail 2",
   "category": "NOTICIAS|SEDES|MARKETING|ANÁLISIS",
-  "content": "Contenido completo en Markdown con ## y ### para secciones, **negritas**, listas, etc.",
+  "content": "Contenido completo en Markdown — usa ## para secciones, ### para subsecciones, **negrita** para datos clave, > para citas y blockquotes llamativos, listas numeradas/con viñetas donde aplique.",
   "image_url": null,
   "image_alt": null,
   "author": "Jorge Rodríguez"
 }
 
-Si el usuario solo quiere conversar o pide aclaraciones, responde normalmente en español sin JSON.
-Solo incluye el JSON cuando tengas el artículo completo listo.`
+Si el usuario quiere conversar o pide aclaraciones, responde en español sin JSON. Solo incluye el JSON cuando tengas el artículo completo.`
 
-// Ordered by preference — falls back automatically on 429/503
-const MODEL_FALLBACKS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite']
+// ALL models available on this API key — widest possible fallback net
+const MODEL_FALLBACKS = [
+  'gemini-2.5-flash',
+  'gemini-2.0-flash',
+  'gemini-2.0-flash-lite',
+  'gemini-2.5-flash-lite',
+  'gemini-flash-latest',
+  'gemini-flash-lite-latest',
+  'gemini-2.0-flash-001',
+  'gemini-2.0-flash-lite-001',
+]
 
 interface GeminiMessage {
   role: 'user' | 'assistant'
@@ -90,21 +115,25 @@ export async function POST(req: Request) {
       const result = await chat.sendMessage(lastMessage.content)
       const text = result.response.text()
       const article = extractArticle(text)
+      console.log(`[generate] success with model: ${modelName}`)
       return NextResponse.json({ text, article, model: modelName })
     } catch (err: unknown) {
       lastErr = err instanceof Error ? err : new Error(String(err))
       const msg = lastErr.message.toLowerCase()
-      // Only fall through on quota/overload errors
-      if (msg.includes('429') || msg.includes('quota') || msg.includes('503') || msg.includes('overload') || msg.includes('unavailable')) {
-        console.warn(`[generate] ${modelName} unavailable, trying next model...`)
+      const isQuota = msg.includes('429') || msg.includes('quota') || msg.includes('503')
+        || msg.includes('overload') || msg.includes('unavailable') || msg.includes('resource')
+        || msg.includes('busy') || msg.includes('rate')
+      if (isQuota) {
+        console.warn(`[generate] ${modelName} busy/quota, trying next...`)
         continue
       }
-      // Any other error (auth, bad request, etc.) — fail immediately
-      console.error('[generate/route]', err)
+      console.error('[generate/route] hard error on', modelName, err)
       return NextResponse.json({ error: lastErr.message }, { status: 500 })
     }
   }
 
-  console.error('[generate/route] all models failed', lastErr)
-  return NextResponse.json({ error: 'Todos los modelos están ocupados. Intenta de nuevo en unos minutos.' }, { status: 503 })
+  console.error('[generate/route] all 8 models failed', lastErr?.message)
+  return NextResponse.json({
+    error: 'La IA está muy ocupada en este momento. Espera 1-2 minutos e intenta de nuevo.',
+  }, { status: 503 })
 }
