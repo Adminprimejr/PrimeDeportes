@@ -12,7 +12,7 @@ const articles = [
     meta_desc: 'Descubre las 16 sedes del Mundial 2026 en EE.UU., Canadá y México. Estadios, ciudades y oportunidades para marcas durante el torneo más grande de la historia.',
     keywords: 'sedes Copa del Mundo 2026, estadios Mundial 2026, ciudades sede Mundial, FIFA World Cup 2026 venues',
     category: 'SEDES',
-    image_url: 'https://images.unsplash.com/photo-1540747913346-19212a4cf528?auto=format&fit=crop&w=1200&q=80',
+    image_url: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1200&q=80',
     image_alt: 'Estadio iluminado en la noche para la Copa del Mundo 2026',
     author: 'Jorge Rodríguez',
     published: 1,

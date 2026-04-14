@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Eye, Code, Save, Send, CheckCircle, AlertCircle } from 'lucide-react'
+import ImagePicker from './ImagePicker'
 
 interface ArticleDraft {
   slug: string
@@ -300,26 +301,17 @@ export default function ArticleEditor({ draft: controlledDraft, onChange, onPubl
             />
           </div>
 
-          {/* Image URL */}
-          <div className="grid md:grid-cols-2 gap-5">
-            <div>
-              <label className="block text-[10px] font-black tracking-widest uppercase text-white/40 mb-2">URL de imagen</label>
-              <input
-                value={draft.image_url ?? ''}
-                onChange={(e) => update('image_url', e.target.value || null)}
-                placeholder="https://..."
-                className="w-full bg-white/5 border border-white/20 text-white/70 px-4 py-3 focus:outline-none focus:border-gold transition-colors font-mono text-sm placeholder-white/20"
-              />
-            </div>
-            <div>
-              <label className="block text-[10px] font-black tracking-widest uppercase text-white/40 mb-2">Alt text de imagen</label>
-              <input
-                value={draft.image_alt ?? ''}
-                onChange={(e) => update('image_alt', e.target.value || null)}
-                placeholder="Descripción de la imagen para SEO"
-                className="w-full bg-white/5 border border-white/20 text-white px-4 py-3 focus:outline-none focus:border-gold transition-colors placeholder-white/20"
-              />
-            </div>
+          {/* Image picker */}
+          <div>
+            <label className="block text-[10px] font-black tracking-widest uppercase text-white/40 mb-2">
+              Imagen del artículo <span className="text-gold">↑ Galería o URL personalizada</span>
+            </label>
+            <ImagePicker
+              value={draft.image_url}
+              alt={draft.image_alt}
+              category={draft.category}
+              onSelect={(url, alt) => { update('image_url', url); update('image_alt', alt) }}
+            />
           </div>
 
           {/* Content */}
