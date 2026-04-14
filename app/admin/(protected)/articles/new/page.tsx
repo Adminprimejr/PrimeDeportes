@@ -110,7 +110,15 @@ export default function NewArticlePage() {
           </div>
         </div>
       ) : (
-        <ArticleEditor initialDraft={draft} mode="new" />
+        <div>
+          <button
+            onClick={() => setTab('ai')}
+            className="mb-6 text-xs font-black uppercase tracking-widest text-white/40 hover:text-gold transition-colors flex items-center gap-2"
+          >
+            ← Volver al chat de IA
+          </button>
+          <ArticleEditor initialDraft={draft} mode="new" />
+        </div>
       )}
     </div>
   )

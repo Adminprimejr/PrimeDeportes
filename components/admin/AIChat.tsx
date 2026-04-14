@@ -42,6 +42,8 @@ export default function AIChat({ onArticleReady, onSwitchToEditor }: Props) {
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  // Store the last successfully parsed article so "Ver borrador" can re-pass it
+  const [lastArticle, setLastArticle] = useState<ArticleDraft | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -75,6 +77,7 @@ export default function AIChat({ onArticleReady, onSwitchToEditor }: Props) {
       setMessages((prev) => [...prev, { role: 'assistant', content: data.text }])
 
       if (data.article) {
+        setLastArticle(data.article)
         onArticleReady(data.article)
       }
     } catch {
@@ -82,6 +85,12 @@ export default function AIChat({ onArticleReady, onSwitchToEditor }: Props) {
     } finally {
       setLoading(false)
     }
+  }
+
+  function handleVerBorrador() {
+    // Always re-pass the article when the user manually clicks the button
+    if (lastArticle) onArticleReady(lastArticle)
+    onSwitchToEditor?.()
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -121,19 +130,16 @@ export default function AIChat({ onArticleReady, onSwitchToEditor }: Props) {
                   ? 'bg-white/5 border border-white/10 text-white/80'
                   : 'bg-gold/10 border border-gold/30 text-white'
               }`}>
-                {/* If assistant message contains JSON article, show a notice with action button */}
                 {msg.role === 'assistant' && msg.content.includes('"slug"') && msg.content.includes('"content"') ? (
                   <div className="space-y-2">
                     <p className="text-green-400 font-black text-xs uppercase tracking-widest">✓ Artículo generado</p>
                     <p className="text-white/60 text-sm">El borrador está listo para editar y publicar.</p>
-                    {onSwitchToEditor && (
-                      <button
-                        onClick={onSwitchToEditor}
-                        className="mt-2 bg-gold text-navy text-xs font-black uppercase tracking-widest px-4 py-2 hover:bg-white transition-colors"
-                      >
-                        Ver borrador →
-                      </button>
-                    )}
+                    <button
+                      onClick={handleVerBorrador}
+                      className="mt-2 bg-gold text-navy text-xs font-black uppercase tracking-widest px-4 py-2 hover:bg-white transition-colors"
+                    >
+                      Ver borrador →
+                    </button>
                   </div>
                 ) : msg.content}
               </div>
