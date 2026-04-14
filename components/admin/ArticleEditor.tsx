@@ -20,6 +20,11 @@ interface ArticleDraft {
 }
 
 interface Props {
+  // Controlled mode (new page with AI): pass both
+  draft?: ArticleDraft
+  onChange?: (d: ArticleDraft) => void
+  onPublishSuccess?: () => void
+  // Uncontrolled mode (edit existing article): pass this
   initialDraft?: Partial<ArticleDraft>
   articleId?: number
   mode: 'new' | 'edit'
@@ -71,9 +76,11 @@ function generateSlug(title: string) {
     .substring(0, 80)
 }
 
-export default function ArticleEditor({ initialDraft, articleId, mode }: Props) {
+export default function ArticleEditor({ draft: controlledDraft, onChange, onPublishSuccess, initialDraft, articleId, mode }: Props) {
   const router = useRouter()
-  const [draft, setDraft] = useState<ArticleDraft>({ ...EMPTY, ...initialDraft })
+  const isControlled = controlledDraft !== undefined && onChange !== undefined
+  const [internalDraft, setInternalDraft] = useState<ArticleDraft>({ ...EMPTY, ...initialDraft })
+  const draft = isControlled ? controlledDraft : internalDraft
   const [preview, setPreview] = useState(false)
   const [saving, setSaving] = useState(false)
   const [publishing, setPublishing] = useState(false)
@@ -81,15 +88,16 @@ export default function ArticleEditor({ initialDraft, articleId, mode }: Props) 
   const [errorMsg, setErrorMsg] = useState('')
 
   function update(field: keyof ArticleDraft, value: string | null) {
-    setDraft((prev) => {
-      const updated = { ...prev, [field]: value }
-      // Auto-generate slug from title
-      if (field === 'title' && typeof value === 'string') {
-        updated.slug = generateSlug(value)
-        if (!updated.meta_title) updated.meta_title = value.substring(0, 55) + ' | Prime Deportes'
-      }
-      return updated
-    })
+    const updated = { ...draft, [field]: value }
+    if (field === 'title' && typeof value === 'string') {
+      updated.slug = generateSlug(value)
+      if (!updated.meta_title) updated.meta_title = value.substring(0, 55) + ' | Prime Deportes'
+    }
+    if (isControlled) {
+      onChange(updated)
+    } else {
+      setInternalDraft(updated)
+    }
     setSaved(false)
   }
 
@@ -143,6 +151,7 @@ export default function ArticleEditor({ initialDraft, articleId, mode }: Props) 
     const id = await saveArticle(true)
     setPublishing(false)
     if (id) {
+      onPublishSuccess?.()
       router.push('/admin/articles')
     }
   }

@@ -29,9 +29,36 @@ Cuando el usuario te pide un artículo, responde SIEMPRE con un JSON válido con
 Si el usuario solo quiere conversar o pide aclaraciones, responde normalmente en español sin JSON.
 Solo incluye el JSON cuando tengas el artículo completo listo.`
 
+// Ordered by preference — falls back automatically on 429/503
+const MODEL_FALLBACKS = ['gemini-1.5-flash', 'gemini-2.5-flash', 'gemini-1.5-flash-8b']
+
 interface GeminiMessage {
   role: 'user' | 'assistant'
   content: string
+}
+
+function extractArticle(text: string) {
+  let searchText = text
+  const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/)
+  if (fenceMatch) searchText = fenceMatch[1].trim()
+
+  const jsonStart = searchText.indexOf('{')
+  const jsonEnd = searchText.lastIndexOf('}')
+  if (jsonStart !== -1 && jsonEnd > jsonStart) {
+    try {
+      const parsed = JSON.parse(searchText.slice(jsonStart, jsonEnd + 1))
+      if (parsed.slug && parsed.title && parsed.content) return parsed
+    } catch {
+      const jsonMatch = searchText.match(/\{[\s\S]*?"slug"[\s\S]*?"content"[\s\S]*\}/)
+      if (jsonMatch) {
+        try {
+          const parsed = JSON.parse(jsonMatch[0])
+          if (parsed.slug && parsed.title && parsed.content) return parsed
+        } catch { /* ignore */ }
+      }
+    }
+  }
+  return null
 }
 
 export async function POST(req: Request) {
@@ -43,64 +70,41 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'GEMINI_API_KEY no configurada' }, { status: 500 })
   }
 
-  try {
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-      systemInstruction: SYSTEM_PROMPT,
-    })
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 
-    // Convert messages to Gemini format (user/model roles)
-    // Gemini requires history to start with 'user' — drop any leading model messages
-    let history = messages.slice(0, -1).map((m) => ({
-      role: (m.role === 'assistant' ? 'model' : 'user') as 'user' | 'model',
-      parts: [{ text: m.content }],
-    }))
-    while (history.length > 0 && history[0].role !== 'user') {
-      history = history.slice(1)
-    }
-
-    const lastMessage = messages[messages.length - 1]
-    const chat = model.startChat({ history })
-    const result = await chat.sendMessage(lastMessage.content)
-    const text = result.response.text()
-
-    // Extract JSON article — handle markdown code blocks (```json...```) and raw JSON
-    let article = null
-    let searchText = text
-
-    // Strip markdown code fences if present
-    const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/)
-    if (fenceMatch) {
-      searchText = fenceMatch[1].trim()
-    }
-
-    // Find the outermost JSON object containing "slug"
-    const jsonStart = searchText.indexOf('{')
-    const jsonEnd = searchText.lastIndexOf('}')
-    if (jsonStart !== -1 && jsonEnd > jsonStart) {
-      try {
-        const candidate = searchText.slice(jsonStart, jsonEnd + 1)
-        const parsed = JSON.parse(candidate)
-        if (parsed.slug && parsed.title && parsed.content) {
-          article = parsed
-        }
-      } catch {
-        // Try regex fallback
-        const jsonMatch = searchText.match(/\{[\s\S]*?"slug"[\s\S]*?"content"[\s\S]*\}/)
-        if (jsonMatch) {
-          try {
-            const parsed = JSON.parse(jsonMatch[0])
-            if (parsed.slug && parsed.title && parsed.content) article = parsed
-          } catch { /* ignore */ }
-        }
-      }
-    }
-
-    return NextResponse.json({ text, article })
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Error generando artículo'
-    console.error('[generate/route]', err)
-    return NextResponse.json({ error: message }, { status: 500 })
+  // Build history — Gemini requires it to start with 'user'
+  let history = messages.slice(0, -1).map((m) => ({
+    role: (m.role === 'assistant' ? 'model' : 'user') as 'user' | 'model',
+    parts: [{ text: m.content }],
+  }))
+  while (history.length > 0 && history[0].role !== 'user') {
+    history = history.slice(1)
   }
+  const lastMessage = messages[messages.length - 1]
+
+  let lastErr: Error | null = null
+  for (const modelName of MODEL_FALLBACKS) {
+    try {
+      const model = genAI.getGenerativeModel({ model: modelName, systemInstruction: SYSTEM_PROMPT })
+      const chat = model.startChat({ history })
+      const result = await chat.sendMessage(lastMessage.content)
+      const text = result.response.text()
+      const article = extractArticle(text)
+      return NextResponse.json({ text, article, model: modelName })
+    } catch (err: unknown) {
+      lastErr = err instanceof Error ? err : new Error(String(err))
+      const msg = lastErr.message.toLowerCase()
+      // Only fall through on quota/overload errors
+      if (msg.includes('429') || msg.includes('quota') || msg.includes('503') || msg.includes('overload') || msg.includes('unavailable')) {
+        console.warn(`[generate] ${modelName} unavailable, trying next model...`)
+        continue
+      }
+      // Any other error (auth, bad request, etc.) — fail immediately
+      console.error('[generate/route]', err)
+      return NextResponse.json({ error: lastErr.message }, { status: 500 })
+    }
+  }
+
+  console.error('[generate/route] all models failed', lastErr)
+  return NextResponse.json({ error: 'Todos los modelos están ocupados. Intenta de nuevo en unos minutos.' }, { status: 503 })
 }
