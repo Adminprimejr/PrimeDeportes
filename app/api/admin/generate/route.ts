@@ -4,36 +4,19 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 
 function buildSystemPrompt(): string {
   const now = new Date()
-  const worldCupStart = new Date('2026-06-11T00:00:00')
-  const worldCupEnd = new Date('2026-07-19T00:00:00')
-  const salesClose = new Date('2026-06-01T00:00:00')
-
-  const daysToKickoff = Math.ceil((worldCupStart.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-  const daysToSalesClose = Math.ceil((salesClose.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-
-  const dateStr = now.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-
-  const kickoffContext = daysToKickoff > 0
-    ? `faltan exactamente **${daysToKickoff} días** para el partido inaugural`
-    : daysToKickoff === 0
-    ? `HOY es el día del partido inaugural`
-    : `el torneo lleva ${Math.abs(daysToKickoff)} días en curso`
-
-  const salesContext = daysToSalesClose > 0
-    ? `El cierre de ventas publicitarias es en ${daysToSalesClose} días (1 de junio 2026).`
-    : `El período de ventas publicitarias ya cerró.`
+  const dateStr = now.toLocaleDateString('es-MX', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  })
 
   return `Eres el editor senior de contenido de Prime Deportes, un medio hispano líder especializado en el Mundial 2026. Escribes con el nivel editorial de ESPN Deportes, pero con la pasión del periodismo latino.
 
-━━━ CONTEXTO TEMPORAL CRÍTICO ━━━
-HOY ES: ${dateStr}
-El Mundial FIFA 2026 comienza el 11 de junio de 2026 — ${kickoffContext}.
-El torneo termina el 19 de julio de 2026. Son 39 días de competencia, 16 sedes en USA/México/Canadá, 48 selecciones.
-${salesContext}
+FECHA DE HOY: ${dateStr}
+Tienes acceso a búsqueda en tiempo real de Google. Úsala para obtener las últimas noticias, estadísticas actuales y datos verificados sobre cualquier tema que Jorge quiera cubrir. Escribe siempre con información ACTUAL — no uses datos desactualizados de tu entrenamiento si hay algo más reciente disponible.
 
-⚠️ PROHIBIDO escribir frases como "en dos años", "próximamente", "en el futuro", "cuando llegue el Mundial".
-El Mundial es INMINENTE. Usa el tono de cuenta regresiva y urgencia real.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXTO FIJO DEL SITIO:
+- Prime Deportes cubre el Mundial FIFA 2026: 11 junio – 19 julio 2026, 16 sedes en USA/México/Canadá, 48 selecciones
+- El cierre de ventas publicitarias es el 1 de junio de 2026
+- Audiencia: fanáticos hispanos en EE.UU. y Colombia
 
 ESTILO EDITORIAL OBLIGATORIO:
 - Párrafos cortos: máximo 3 oraciones. Crea ritmo, respira.
@@ -47,17 +30,17 @@ ESTILO EDITORIAL OBLIGATORIO:
 - Cierra con un párrafo de "Por qué importa" que conecte emocionalmente
 
 ESTRUCTURA DE CONTENIDO (sigue este flujo):
-1. Lead hook — imagen emotiva o dato explosivo que transmita urgencia de los ${daysToKickoff} días que quedan (1 párrafo)
-2. Contexto — qué está pasando AHORA MISMO y por qué importa hoy (2-3 párrafos)
-3. El núcleo — los detalles que importan, con datos verificables (3-4 párrafos con subheadings)
+1. Lead hook — imagen emotiva o dato explosivo (1 párrafo)
+2. Contexto — qué está pasando ahora mismo y por qué importa hoy (2-3 párrafos)
+3. El núcleo — los detalles que importan, con datos verificables y actuales (3-4 párrafos con subheadings)
 4. Una perspectiva única — ángulo editorial de Prime Deportes
-5. Cierre emocional — por qué le importa al lector hispano en EE.UU. en este momento
+5. Cierre emocional — por qué le importa al lector hispano en EE.UU.
 
 REGLAS DE ESCRITURA:
 - Español neutro (México, Colombia, EE.UU.) — no jerga regional exclusiva
-- Tono: apasionado, experto, humano — como un amigo que sabe mucho de fútbol y está contando los días
+- Tono: apasionado, experto, humano — como un amigo que sabe mucho de fútbol
 - 900-1400 palabras de contenido real
-- Para artículos de marketing: enfócate en el ROI y urgencia de cupos limitados (cierre en ${daysToSalesClose} días)
+- Para artículos de marketing: enfócate en el ROI y oportunidades concretas para marcas
 
 FORMATO JSON REQUERIDO cuando el artículo esté completo:
 {
@@ -76,8 +59,15 @@ FORMATO JSON REQUERIDO cuando el artículo esté completo:
 Si el usuario quiere conversar o pide aclaraciones, responde en español sin JSON. Solo incluye el JSON cuando tengas el artículo completo.`
 }
 
-// ALL models available on this API key — widest possible fallback net
-const MODEL_FALLBACKS = [
+// Models that support Google Search grounding — tried first
+const SEARCH_MODELS = [
+  'gemini-2.5-flash',
+  'gemini-2.0-flash',
+  'gemini-2.0-flash-001',
+]
+
+// Full fallback list (no search) — used if all search-enabled models fail
+const FALLBACK_MODELS = [
   'gemini-2.5-flash',
   'gemini-2.0-flash',
   'gemini-2.0-flash-lite',
@@ -87,6 +77,8 @@ const MODEL_FALLBACKS = [
   'gemini-2.0-flash-001',
   'gemini-2.0-flash-lite-001',
 ]
+
+const SEARCH_TOOL = [{ googleSearchRetrieval: {} }]
 
 interface GeminiMessage {
   role: 'user' | 'assistant'
@@ -114,7 +106,6 @@ function sanitizeJsonString(str: string): string {
 }
 
 function extractArticle(text: string) {
-  // Strip code fences if present
   let searchText = text
   const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/)
   if (fenceMatch) searchText = fenceMatch[1].trim()
@@ -125,19 +116,23 @@ function extractArticle(text: string) {
 
   const rawJson = searchText.slice(jsonStart, jsonEnd + 1)
 
-  // Try 1: raw parse (ideal case)
   try {
     const parsed = JSON.parse(rawJson)
     if (parsed.slug && parsed.title && parsed.content) return parsed
   } catch { /* fall through */ }
 
-  // Try 2: sanitize literal newlines inside strings, then parse
   try {
     const parsed = JSON.parse(sanitizeJsonString(rawJson))
     if (parsed.slug && parsed.title && parsed.content) return parsed
   } catch { /* fall through */ }
 
   return null
+}
+
+function isQuotaError(msg: string) {
+  return msg.includes('429') || msg.includes('quota') || msg.includes('503')
+    || msg.includes('overload') || msg.includes('unavailable') || msg.includes('resource')
+    || msg.includes('busy') || msg.includes('rate')
 }
 
 export async function POST(req: Request) {
@@ -150,6 +145,7 @@ export async function POST(req: Request) {
   }
 
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+  const systemInstruction = buildSystemPrompt()
 
   // Build history — Gemini requires it to start with 'user'
   let history = messages.slice(0, -1).map((m) => ({
@@ -161,23 +157,48 @@ export async function POST(req: Request) {
   }
   const lastMessage = messages[messages.length - 1]
 
-  let lastErr: Error | null = null
-  for (const modelName of MODEL_FALLBACKS) {
+  // ── Phase 1: Try with Google Search grounding ──────────────────────────────
+  for (const modelName of SEARCH_MODELS) {
     try {
-      const model = genAI.getGenerativeModel({ model: modelName, systemInstruction: buildSystemPrompt() })
+      const model = genAI.getGenerativeModel({
+        model: modelName,
+        systemInstruction,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        tools: SEARCH_TOOL as any,
+      })
       const chat = model.startChat({ history })
       const result = await chat.sendMessage(lastMessage.content)
       const text = result.response.text()
       const article = extractArticle(text)
-      console.log(`[generate] success with model: ${modelName}`)
-      return NextResponse.json({ text, article, model: modelName })
+      console.log(`[generate] ✓ search+model: ${modelName}`)
+      return NextResponse.json({ text, article, model: modelName, searchUsed: true })
+    } catch (err: unknown) {
+      const errMsg = (err instanceof Error ? err.message : String(err)).toLowerCase()
+      if (isQuotaError(errMsg)) {
+        console.warn(`[generate] ${modelName} (search) quota, trying next...`)
+        continue
+      }
+      // Hard error on search (e.g. model doesn't support it) — break out to Phase 2
+      console.warn(`[generate] ${modelName} search failed (${errMsg.slice(0, 80)}), falling back to no-search`)
+      break
+    }
+  }
+
+  // ── Phase 2: Fallback — no search grounding ────────────────────────────────
+  let lastErr: Error | null = null
+  for (const modelName of FALLBACK_MODELS) {
+    try {
+      const model = genAI.getGenerativeModel({ model: modelName, systemInstruction })
+      const chat = model.startChat({ history })
+      const result = await chat.sendMessage(lastMessage.content)
+      const text = result.response.text()
+      const article = extractArticle(text)
+      console.log(`[generate] ✓ no-search model: ${modelName}`)
+      return NextResponse.json({ text, article, model: modelName, searchUsed: false })
     } catch (err: unknown) {
       lastErr = err instanceof Error ? err : new Error(String(err))
-      const msg = lastErr.message.toLowerCase()
-      const isQuota = msg.includes('429') || msg.includes('quota') || msg.includes('503')
-        || msg.includes('overload') || msg.includes('unavailable') || msg.includes('resource')
-        || msg.includes('busy') || msg.includes('rate')
-      if (isQuota) {
+      const errMsg = lastErr.message.toLowerCase()
+      if (isQuotaError(errMsg)) {
         console.warn(`[generate] ${modelName} busy/quota, trying next...`)
         continue
       }
@@ -186,7 +207,7 @@ export async function POST(req: Request) {
     }
   }
 
-  console.error('[generate/route] all 8 models failed', lastErr?.message)
+  console.error('[generate/route] all models failed', lastErr?.message)
   return NextResponse.json({
     error: 'La IA está muy ocupada en este momento. Espera 1-2 minutos e intenta de nuevo.',
   }, { status: 503 })

@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'motion/react'
 
-// Sales close June 1 — that's the real deadline for advertisers
-const WORLD_CUP = new Date('2026-06-01T00:00:00').getTime()
+// World Cup kickoff — June 11, 2026
+const WORLD_CUP = new Date('2026-06-11T00:00:00').getTime()
 
 const LABELS: Record<string, string> = {
   days: 'DÍAS',
@@ -33,23 +33,28 @@ export default function Countdown() {
   }, [])
 
   return (
-    <div className="flex gap-4 md:gap-12 justify-center mt-16">
-      {(Object.entries(time) as [string, number][]).map(([label, value]) => (
-        <div key={label} className="text-center">
-          <motion.div
-            key={value}
-            initial={{ scale: 1.15, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.2 }}
-            className="text-2xl sm:text-4xl md:text-7xl font-display font-black italic text-white leading-none tabular-nums"
-          >
-            {String(value).padStart(2, '0')}
-          </motion.div>
-          <div className="text-[10px] md:text-xs uppercase tracking-[0.3em] text-gold font-black mt-2">
-            {LABELS[label]}
+    <div className="mt-16">
+      <div className="flex gap-4 md:gap-12 justify-center">
+        {(Object.entries(time) as [string, number][]).map(([label, value]) => (
+          <div key={label} className="text-center">
+            <motion.div
+              key={value}
+              initial={{ scale: 1.15, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.2 }}
+              className="text-2xl sm:text-4xl md:text-7xl font-display font-black italic text-white leading-none tabular-nums"
+            >
+              {String(value).padStart(2, '0')}
+            </motion.div>
+            <div className="text-[10px] md:text-xs uppercase tracking-[0.3em] text-gold font-black mt-2">
+              {LABELS[label]}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
+      <p className="text-center text-[10px] font-black tracking-[0.3em] uppercase text-white/30 mt-6">
+        Hasta el partido inaugural · 11 junio 2026
+      </p>
     </div>
   )
 }
