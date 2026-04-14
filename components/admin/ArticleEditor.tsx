@@ -310,7 +310,12 @@ export default function ArticleEditor({ draft: controlledDraft, onChange, onPubl
               value={draft.image_url}
               alt={draft.image_alt}
               category={draft.category}
-              onSelect={(url, alt) => { update('image_url', url); update('image_alt', alt) }}
+              onSelect={(url, alt) => {
+                // Atomic update — both fields in one call to avoid stale draft
+                const updated = { ...draft, image_url: url, image_alt: alt }
+                if (isControlled) { onChange(updated) } else { setInternalDraft(updated) }
+                setSaved(false)
+              }}
             />
           </div>
 

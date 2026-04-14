@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import AIChat from '@/components/admin/AIChat'
 import ArticleEditor from '@/components/admin/ArticleEditor'
-import { Sparkles, ChevronRight, ChevronLeft } from 'lucide-react'
+import { Sparkles, ChevronRight, ChevronLeft, RotateCcw } from 'lucide-react'
 
 interface ArticleDraft {
   slug: string
@@ -38,6 +38,7 @@ export default function NewArticlePage() {
   const [draft, setDraft] = useState<ArticleDraft>(EMPTY_DRAFT)
   const [aiOpen, setAiOpen] = useState(true)
   const [hydrated, setHydrated] = useState(false)
+  const [aiChatKey, setAiChatKey] = useState(0)
 
   // Load persisted draft from localStorage on mount
   useEffect(() => {
@@ -64,6 +65,17 @@ export default function NewArticlePage() {
     } catch { /* ignore */ }
   }
 
+  function handleStartOver() {
+    if (!confirm('¿Empezar de nuevo? Se borrará el artículo actual y el chat.')) return
+    setDraft(EMPTY_DRAFT)
+    try {
+      localStorage.removeItem(DRAFT_KEY)
+      localStorage.removeItem(CHAT_KEY)
+    } catch { /* ignore */ }
+    // Force AIChat to reset by re-mounting it
+    setAiChatKey((k) => k + 1)
+  }
+
   if (!hydrated) return null
 
   return (
@@ -76,14 +88,23 @@ export default function NewArticlePage() {
           </h1>
           <p className="text-white/30 text-[10px] font-black tracking-widest uppercase">Editor híbrido · IA integrada</p>
         </div>
-        <button
-          onClick={() => setAiOpen((v) => !v)}
-          className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 text-white/50 text-xs font-black uppercase tracking-widest hover:border-gold hover:text-gold transition-colors"
-        >
-          <Sparkles size={13} />
-          IA
-          {aiOpen ? <ChevronRight size={13} /> : <ChevronLeft size={13} />}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleStartOver}
+            className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 text-white/30 text-xs font-black uppercase tracking-widest hover:border-red-500/50 hover:text-red-400 transition-colors"
+          >
+            <RotateCcw size={13} />
+            Empezar de nuevo
+          </button>
+          <button
+            onClick={() => setAiOpen((v) => !v)}
+            className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 text-white/50 text-xs font-black uppercase tracking-widest hover:border-gold hover:text-gold transition-colors"
+          >
+            <Sparkles size={13} />
+            IA
+            {aiOpen ? <ChevronRight size={13} /> : <ChevronLeft size={13} />}
+          </button>
+        </div>
       </div>
 
       {/* Hybrid layout */}
@@ -102,6 +123,7 @@ export default function NewArticlePage() {
         {aiOpen && (
           <div className="w-full lg:w-[42%] bg-white/5 border border-white/10 p-5 flex flex-col overflow-hidden lg:shrink-0">
             <AIChat
+              key={aiChatKey}
               onArticleReady={handleArticleReady}
               currentDraft={draft}
               storageKey={CHAT_KEY}
