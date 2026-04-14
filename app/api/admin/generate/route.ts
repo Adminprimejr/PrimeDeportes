@@ -51,10 +51,14 @@ export async function POST(req: Request) {
     })
 
     // Convert messages to Gemini format (user/model roles)
-    const history = messages.slice(0, -1).map((m) => ({
-      role: m.role === 'assistant' ? 'model' : 'user',
+    // Gemini requires history to start with 'user' — drop any leading model messages
+    let history = messages.slice(0, -1).map((m) => ({
+      role: (m.role === 'assistant' ? 'model' : 'user') as 'user' | 'model',
       parts: [{ text: m.content }],
     }))
+    while (history.length > 0 && history[0].role !== 'user') {
+      history = history.slice(1)
+    }
 
     const lastMessage = messages[messages.length - 1]
     const chat = model.startChat({ history })
