@@ -58,7 +58,9 @@ export default function NewArticlePage() {
     handleDraftChange(article)
   }
 
-  function handlePublishSuccess() {
+  // Clear localStorage once the article has been persisted — prevents the
+  // previous draft from re-appearing the next time the user opens "Nuevo artículo".
+  function clearPersistedDraft() {
     try {
       localStorage.removeItem(DRAFT_KEY)
       localStorage.removeItem(CHAT_KEY)
@@ -68,10 +70,7 @@ export default function NewArticlePage() {
   function handleStartOver() {
     if (!confirm('¿Empezar de nuevo? Se borrará el artículo actual y el chat.')) return
     setDraft(EMPTY_DRAFT)
-    try {
-      localStorage.removeItem(DRAFT_KEY)
-      localStorage.removeItem(CHAT_KEY)
-    } catch { /* ignore */ }
+    clearPersistedDraft()
     // Force AIChat to reset by re-mounting it
     setAiChatKey((k) => k + 1)
   }
@@ -114,7 +113,8 @@ export default function NewArticlePage() {
           <ArticleEditor
             draft={draft}
             onChange={handleDraftChange}
-            onPublishSuccess={handlePublishSuccess}
+            onSaveSuccess={clearPersistedDraft}
+            onPublishSuccess={clearPersistedDraft}
             mode="new"
           />
         </div>

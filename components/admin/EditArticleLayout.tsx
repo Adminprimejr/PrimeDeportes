@@ -110,6 +110,7 @@ export default function EditArticleLayout({ article }: Props) {
             draft={draft}
             onChange={setDraft}
             articleId={article.id}
+            currentPublished={article.published}
             mode="edit"
           />
         </div>

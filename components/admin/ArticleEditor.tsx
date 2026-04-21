@@ -24,10 +24,14 @@ interface Props {
   // Controlled mode (new page with AI): pass both
   draft?: ArticleDraft
   onChange?: (d: ArticleDraft) => void
+  onSaveSuccess?: () => void
   onPublishSuccess?: () => void
   // Uncontrolled mode (edit existing article): pass this
   initialDraft?: Partial<ArticleDraft>
   articleId?: number
+  // Current published state (edit mode only) — so "Guardar borrador" doesn't
+  // silently flip a live article back to draft.
+  currentPublished?: 0 | 1
   mode: 'new' | 'edit'
 }
 
@@ -77,7 +81,7 @@ function generateSlug(title: string) {
     .substring(0, 80)
 }
 
-export default function ArticleEditor({ draft: controlledDraft, onChange, onPublishSuccess, initialDraft, articleId, mode }: Props) {
+export default function ArticleEditor({ draft: controlledDraft, onChange, onSaveSuccess, onPublishSuccess, initialDraft, articleId, currentPublished = 0, mode }: Props) {
   const router = useRouter()
   const isControlled = controlledDraft !== undefined && onChange !== undefined
   const [internalDraft, setInternalDraft] = useState<ArticleDraft>({ ...EMPTY, ...initialDraft })
@@ -102,11 +106,16 @@ export default function ArticleEditor({ draft: controlledDraft, onChange, onPubl
     setSaved(false)
   }
 
-  async function saveArticle(publish = false): Promise<number | null> {
+  async function saveArticle(publish: boolean | null): Promise<number | null> {
     setSaving(true)
     setErrorMsg('')
     try {
-      const payload = { ...draft, published: publish ? 1 : 0 }
+      // publish = true  → force published=1
+      // publish = false → force published=0 (only used by explicit "unpublish" paths, which we don't have here)
+      // publish = null  → preserve current state (new articles default to draft, existing keeps its flag)
+      const resolvedPublished: 0 | 1 =
+        publish === true ? 1 : publish === false ? 0 : mode === 'new' ? 0 : currentPublished
+      const payload = { ...draft, published: resolvedPublished }
       let id = articleId
       if (mode === 'new') {
         const res = await fetch('/api/admin/articles', {
@@ -141,9 +150,10 @@ export default function ArticleEditor({ draft: controlledDraft, onChange, onPubl
   }
 
   async function handleSave() {
-    const id = await saveArticle(false)
-    if (id && mode === 'new') {
-      router.push(`/admin/articles/${id}`)
+    const id = await saveArticle(null)
+    if (id) {
+      onSaveSuccess?.()
+      if (mode === 'new') router.push(`/admin/articles/${id}`)
     }
   }
 
@@ -202,7 +212,7 @@ export default function ArticleEditor({ draft: controlledDraft, onChange, onPubl
       </div>
 
       {preview ? (
-        /* Preview mode */
+        /* Preview mode — uses the same .article-body styles as the published page */
         <div className="bg-white/5 border border-white/10 p-8">
           <div className="max-w-3xl">
             <div className="mb-2">
@@ -210,12 +220,7 @@ export default function ArticleEditor({ draft: controlledDraft, onChange, onPubl
             </div>
             <h1 className="font-display font-black italic text-white text-4xl leading-tight mb-4">{draft.title || 'Sin título'}</h1>
             <p className="text-white/50 text-sm mb-8 pb-8 border-b border-white/10">Por {draft.author}</p>
-            <div className="prose prose-invert prose-sm max-w-none
-              prose-headings:font-display prose-headings:italic prose-headings:font-black prose-headings:text-white
-              prose-h2:text-2xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:border-l-4 prose-h2:border-gold prose-h2:pl-4
-              prose-h3:text-lg prose-h3:text-gold
-              prose-p:text-white/70 prose-strong:text-white prose-ul:text-white/70
-            ">
+            <div className="article-body max-w-none text-white/80 [&_h2]:font-display [&_h2]:italic [&_h2]:font-black [&_h2]:text-white [&_h2]:text-2xl [&_h2]:mt-10 [&_h2]:mb-4 [&_h3]:font-display [&_h3]:italic [&_h3]:font-black [&_h3]:text-gold [&_h3]:text-lg [&_h3]:mt-8 [&_h3]:mb-3 [&_p]:leading-relaxed [&_p]:mb-6 [&_a]:text-gold hover:[&_a]:underline">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{draft.content || '*Sin contenido*'}</ReactMarkdown>
             </div>
           </div>
