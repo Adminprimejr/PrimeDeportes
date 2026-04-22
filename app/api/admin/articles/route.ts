@@ -14,6 +14,7 @@ export async function POST(req: Request) {
     const article = createArticle(data)
     return NextResponse.json(article, { status: 201 })
   } catch (err: unknown) {
+    console.error('[POST /api/admin/articles] failed', err, 'payload keys:', Object.keys(data ?? {}))
     const message = err instanceof Error ? err.message : 'Error al crear artículo'
     return NextResponse.json({ error: message }, { status: 400 })
   }

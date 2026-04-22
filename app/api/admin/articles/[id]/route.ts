@@ -20,6 +20,7 @@ export async function PATCH(req: Request, { params }: Params) {
     const article = updateArticle(Number(id), data)
     return NextResponse.json(article)
   } catch (err: unknown) {
+    console.error('[PATCH /api/admin/articles/' + id + '] failed', err, 'payload keys:', Object.keys(data ?? {}))
     const message = err instanceof Error ? err.message : 'Error'
     return NextResponse.json({ error: message }, { status: 400 })
   }
