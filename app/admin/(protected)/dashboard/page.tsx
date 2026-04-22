@@ -2,8 +2,8 @@ import Link from 'next/link'
 import { getStats } from '@/lib/articles'
 import { FileText, Users, Globe, PlusCircle } from 'lucide-react'
 
-export default function DashboardPage() {
-  const stats = getStats()
+export default async function DashboardPage() {
+  const stats = await getStats()
 
   const STAT_CARDS = [
     { label: 'Artículos totales', value: stats.articles, icon: FileText, color: 'text-gold' },

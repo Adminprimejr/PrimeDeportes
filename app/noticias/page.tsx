@@ -37,8 +37,8 @@ function formatDate(dateStr: string) {
   }).toUpperCase()
 }
 
-export default function NoticiasPage() {
-  const articles = getPublishedArticles(30)
+export default async function NoticiasPage() {
+  const articles = await getPublishedArticles(30)
   const [featured, ...rest] = articles
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://primedeportes.com'
 

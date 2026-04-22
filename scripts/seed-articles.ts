@@ -1,8 +1,21 @@
 /**
  * Run once: npx tsx scripts/seed-articles.ts
- * Seeds 4 published World Cup 2026 articles into the database.
+ * Seeds 4 published World Cup 2026 articles into Supabase.
+ *
+ * Requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in the
+ * environment — add them to .env.local and run with tsx which loads it.
  */
-import db from '../lib/db'
+import { createClient } from '@supabase/supabase-js'
+
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+if (!url || !key) {
+  console.error('Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY before running.')
+  process.exit(1)
+}
+const supabase = createClient(url, key, {
+  auth: { persistSession: false, autoRefreshToken: false },
+})
 
 const articles = [
   {
@@ -257,22 +270,25 @@ Síguenos en nuestras plataformas digitales, el Podcast Deportivo semanal y el p
   },
 ]
 
-const stmt = db.prepare(`
-  INSERT OR IGNORE INTO articles
-    (slug, title, meta_title, meta_desc, keywords, category, content, image_url, image_alt, published, author)
-  VALUES
-    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-`)
-
-let inserted = 0
-for (const a of articles) {
-  const result = stmt.run(
-    a.slug, a.title, a.meta_title, a.meta_desc,
-    a.keywords, a.category, a.content,
-    a.image_url, a.image_alt, a.published, a.author,
-  )
-  if (result.changes > 0) inserted++
+async function main() {
+  let inserted = 0
+  let skipped = 0
+  for (const a of articles) {
+    // Upsert by slug — skip rows that already exist so we don't clobber edits.
+    const { data: existing } = await supabase
+      .from('articles')
+      .select('id')
+      .eq('slug', a.slug)
+      .maybeSingle()
+    if (existing) { skipped++; continue }
+    const { error } = await supabase.from('articles').insert(a)
+    if (error) {
+      console.error(`✗ Failed to seed ${a.slug}: ${error.message}`)
+      continue
+    }
+    inserted++
+  }
+  console.log(`✓ Seeded ${inserted} articles (${skipped} already existed)`)
 }
 
-console.log(`✓ Seeded ${inserted} articles (${articles.length - inserted} already existed)`)
-process.exit(0)
+main().then(() => process.exit(0)).catch((e) => { console.error(e); process.exit(1) })

@@ -1,14 +1,4 @@
-import { getLeads } from '@/lib/articles'
-
-interface Lead {
-  id: number
-  name: string
-  email: string
-  company: string
-  pack: string
-  message: string
-  created_at: string
-}
+import { getLeads, type Lead } from '@/lib/articles'
 
 const PACK_COLORS: Record<string, string> = {
   digital: 'bg-white/10 text-white',
@@ -22,8 +12,8 @@ const PACK_LABELS: Record<string, string> = {
   live: 'Live Experience — $7,500',
 }
 
-export default function LeadsPage() {
-  const leads = getLeads() as Lead[]
+export default async function LeadsPage() {
+  const leads: Lead[] = await getLeads()
 
   return (
     <div>

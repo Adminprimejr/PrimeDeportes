@@ -20,7 +20,7 @@ export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const article = getArticleBySlug(slug)
+  const article = await getArticleBySlug(slug)
   if (!article) return {}
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://primedeportes.com'
@@ -63,7 +63,7 @@ function formatDate(dateStr: string) {
 
 export default async function ArticlePage({ params }: Props) {
   const { slug } = await params
-  const article = getArticleBySlug(slug)
+  const article = await getArticleBySlug(slug)
   if (!article) notFound()
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://primedeportes.com'
