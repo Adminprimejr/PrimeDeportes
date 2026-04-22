@@ -37,15 +37,35 @@ export function getArticleById(id: number): Article | null {
   return (db.prepare('SELECT * FROM articles WHERE id = ?').get(id) as Article) ?? null
 }
 
-export function createArticle(data: ArticleInput): Article {
+// Apply safe defaults for any NOT NULL text column the caller forgot to send.
+// The AI can return partial JSON and old localStorage drafts can be missing fields,
+// so the server is the last line of defense before SQLite rejects the row.
+function withDefaults(data: Partial<ArticleInput>): ArticleInput {
+  return {
+    slug: data.slug ?? '',
+    title: data.title ?? '',
+    meta_title: data.meta_title || data.title || '',
+    meta_desc: data.meta_desc ?? '',
+    keywords: data.keywords ?? '',
+    category: data.category || 'NOTICIAS',
+    content: data.content ?? '',
+    image_url: data.image_url ?? null,
+    image_alt: data.image_alt ?? null,
+    published: (data.published === 1 ? 1 : 0),
+    author: data.author?.trim() || 'Jorge Rodríguez',
+  }
+}
+
+export function createArticle(data: Partial<ArticleInput>): Article {
+  const safe = withDefaults(data)
   const result = db.prepare(`
     INSERT INTO articles (slug, title, meta_title, meta_desc, keywords, category, content, image_url, image_alt, published, author)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
-    data.slug, data.title, data.meta_title, data.meta_desc,
-    data.keywords, data.category, data.content,
-    data.image_url ?? null, data.image_alt ?? null,
-    data.published, data.author,
+    safe.slug, safe.title, safe.meta_title, safe.meta_desc,
+    safe.keywords, safe.category, safe.content,
+    safe.image_url, safe.image_alt,
+    safe.published, safe.author,
   )
   return getArticleById(result.lastInsertRowid as number)!
 }
@@ -53,7 +73,9 @@ export function createArticle(data: ArticleInput): Article {
 export function updateArticle(id: number, data: Partial<ArticleInput>): Article {
   const article = getArticleById(id)
   if (!article) throw new Error(`Article ${id} not found`)
-  const merged = { ...article, ...data }
+  // Merge the incoming patch onto the existing row, then re-apply defaults
+  // so null/undefined in the request never clobbers a NOT NULL column.
+  const merged = withDefaults({ ...article, ...data })
   db.prepare(`
     UPDATE articles SET
       slug = ?, title = ?, meta_title = ?, meta_desc = ?,
@@ -64,7 +86,7 @@ export function updateArticle(id: number, data: Partial<ArticleInput>): Article 
   `).run(
     merged.slug, merged.title, merged.meta_title, merged.meta_desc,
     merged.keywords, merged.category, merged.content,
-    merged.image_url ?? null, merged.image_alt ?? null,
+    merged.image_url, merged.image_alt,
     merged.published, merged.author, id,
   )
   return getArticleById(id)!
