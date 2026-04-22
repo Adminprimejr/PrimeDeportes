@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { getArticleBySlug, getPublishedArticles } from '@/lib/articles'
+import { getArticleBySlug } from '@/lib/articles'
 import Navbar from '@/components/Navbar'
 import SiteFooter from '@/components/SiteFooter'
 import AuthorBio from '@/components/AuthorBio'
@@ -13,10 +13,10 @@ interface Props {
   params: Promise<{ slug: string }>
 }
 
-export async function generateStaticParams() {
-  const articles = getPublishedArticles()
-  return articles.map((a) => ({ slug: a.slug }))
-}
+// Admin-published articles need to appear immediately, not only on next rebuild.
+// Dropping generateStaticParams and forcing dynamic rendering is the simplest
+// way to make new slugs resolvable without a redeploy.
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params

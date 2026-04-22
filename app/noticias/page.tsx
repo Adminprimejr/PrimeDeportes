@@ -19,6 +19,9 @@ export const metadata: Metadata = {
   },
 }
 
+// Admin-published articles need to appear immediately, not only on next rebuild.
+export const dynamic = 'force-dynamic'
+
 const CATEGORY_COLORS: Record<string, string> = {
   SEDES: 'bg-gold text-navy',
   MARKETING: 'bg-accent-red text-white',

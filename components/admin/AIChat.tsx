@@ -29,14 +29,14 @@ interface Props {
 
 const INITIAL_MESSAGE: Message = {
   role: 'assistant',
-  content: '¡Hola Jorge! Puedo generar un artículo nuevo o pulir el que estás escribiendo. ¿Qué hacemos?',
+  content: '¡Hola Jorge! Puedo generar un artículo de cualquier deporte — fútbol, MLB, NBA, boxeo, NFL, F1, lo que sea. ¿Qué cubrimos hoy?',
 }
 
 const STARTER_PROMPTS = [
+  'Artículo sobre el último partido de los Yankees en la MLB',
+  'Análisis de la nueva temporada de la NBA y los equipos favoritos',
+  'Crónica del último fight de boxeo con protagonista hispano',
   'Escríbeme un artículo sobre la selección de México en el Mundial 2026',
-  'Crea un artículo de marketing sobre cómo anunciarse en el Mundial',
-  'Quiero un análisis de los grupos del Mundial 2026',
-  'Artículo sobre las sedes del Mundial en Estados Unidos',
 ]
 
 /** Mirror of server-side sanitizer — fix literal newlines in JSON strings */
