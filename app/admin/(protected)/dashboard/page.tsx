@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { getStats } from '@/lib/articles'
 import { FileText, Users, Globe, PlusCircle } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardPage() {
   const stats = await getStats()
 
