@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
-import db from '@/lib/db'
+import { createLead } from '@/lib/articles'
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 const FROM = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
@@ -20,9 +20,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Nombre, empresa y email son requeridos.' }, { status: 400 })
     }
 
-    db.prepare(
-      'INSERT INTO leads (name, company, email, message, pack) VALUES (?, ?, ?, ?, ?)'
-    ).run(name, company, email, message || null, pack || null)
+    await createLead({ name, company, email, message: message || null, pack: pack || null })
 
     if (resend) {
       await resend.emails.send({

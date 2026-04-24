@@ -6,6 +6,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Eye, Code, Save, Send, CheckCircle, AlertCircle } from 'lucide-react'
 import ImagePicker from './ImagePicker'
+import { toast } from './Toast'
 
 interface ArticleDraft {
   slug: string
@@ -110,37 +111,52 @@ export default function ArticleEditor({ draft: controlledDraft, onChange, onSave
     setSaving(true)
     setErrorMsg('')
     try {
-      // publish = true  → force published=1
-      // publish = false → force published=0 (only used by explicit "unpublish" paths, which we don't have here)
-      // publish = null  → preserve current state (new articles default to draft, existing keeps its flag)
       const resolvedPublished: 0 | 1 =
         publish === true ? 1 : publish === false ? 0 : mode === 'new' ? 0 : currentPublished
       const payload = { ...draft, published: resolvedPublished }
+
+      const url = mode === 'new' ? '/api/admin/articles' : `/api/admin/articles/${articleId}`
+      const method = mode === 'new' ? 'POST' : 'PATCH'
+
+      let res: Response
+      try {
+        res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      } catch {
+        const msg = 'Error de conexión. Revisa tu red e intenta de nuevo.'
+        setErrorMsg(msg)
+        toast('error', msg)
+        return null
+      }
+
+      if (res.status === 401) {
+        // Admin cookie expired or missing — send the user back to login.
+        const msg = 'Sesión expirada. Redirigiendo al login…'
+        setErrorMsg(msg)
+        toast('error', msg)
+        setTimeout(() => router.push('/admin/login'), 1200)
+        return null
+      }
+
+      if (!res.ok) {
+        let serverMsg = `Error ${res.status}`
+        try {
+          const data = await res.json()
+          if (data?.error) serverMsg = data.error
+        } catch { /* response wasn't JSON */ }
+        setErrorMsg(serverMsg)
+        toast('error', serverMsg)
+        console.error('[article-save] failed', { url, method, status: res.status, serverMsg })
+        return null
+      }
+
       let id = articleId
       if (mode === 'new') {
-        const res = await fetch('/api/admin/articles', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        })
-        if (!res.ok) {
-          const data = await res.json()
-          setErrorMsg(data.error || 'Error al guardar el artículo')
-          return null
-        }
         const created = await res.json()
         id = created.id
-      } else {
-        const res = await fetch(`/api/admin/articles/${articleId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        })
-        if (!res.ok) {
-          const data = await res.json()
-          setErrorMsg(data.error || 'Error al guardar el artículo')
-          return null
-        }
       }
       setSaved(true)
       return id ?? null

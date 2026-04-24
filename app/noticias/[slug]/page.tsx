@@ -20,7 +20,12 @@ export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const article = getArticleBySlug(slug)
+  let article: Awaited<ReturnType<typeof getArticleBySlug>> = null
+  try {
+    article = await getArticleBySlug(slug)
+  } catch (err) {
+    console.error('[article] generateMetadata failed:', err)
+  }
   if (!article) return {}
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://primedeportes.com'
@@ -63,7 +68,12 @@ function formatDate(dateStr: string) {
 
 export default async function ArticlePage({ params }: Props) {
   const { slug } = await params
-  const article = getArticleBySlug(slug)
+  let article: Awaited<ReturnType<typeof getArticleBySlug>> = null
+  try {
+    article = await getArticleBySlug(slug)
+  } catch (err) {
+    console.error('[article] getArticleBySlug failed:', err)
+  }
   if (!article) notFound()
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://primedeportes.com'

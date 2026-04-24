@@ -68,12 +68,20 @@ export default function NewArticlePage() {
   }
 
   function handleStartOver() {
-    if (!confirm('¿Empezar de nuevo? Se borrará el artículo actual y el chat.')) return
+    // Only prompt if there's something worth losing — an empty draft with no
+    // chat history shouldn't require a confirm dialog.
+    const hasWork = draft.title.trim() || draft.content.trim()
+    if (hasWork && !confirm('¿Empezar de nuevo? Se borrará el artículo actual y el chat.')) return
     setDraft(EMPTY_DRAFT)
     clearPersistedDraft()
     // Force AIChat to reset by re-mounting it
     setAiChatKey((k) => k + 1)
   }
+
+  // Draft is "unsaved" whenever it exists in localStorage but hasn't been
+  // persisted to the DB yet — make this visible so a stuck draft doesn't look
+  // like a broken system.
+  const draftIsUnsaved = Boolean(draft.title.trim() || draft.content.trim())
 
   if (!hydrated) return null
 
@@ -85,7 +93,12 @@ export default function NewArticlePage() {
           <h1 className="font-display font-black italic text-white text-3xl mb-0.5">
             NUEVO <span className="text-gold">ARTÍCULO</span>
           </h1>
-          <p className="text-white/30 text-[10px] font-black tracking-widest uppercase">Editor híbrido · IA integrada</p>
+          <p className="text-white/30 text-[10px] font-black tracking-widest uppercase">
+            Editor híbrido · IA integrada
+            {draftIsUnsaved && (
+              <span className="ml-3 text-yellow-400">· Borrador sin guardar (solo en este navegador)</span>
+            )}
+          </p>
         </div>
         <div className="flex items-center gap-3">
           <button

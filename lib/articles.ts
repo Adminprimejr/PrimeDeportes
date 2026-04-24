@@ -1,4 +1,4 @@
-import db from './db'
+import { supabase } from './supabase'
 
 export interface Article {
   id: number
@@ -19,72 +19,140 @@ export interface Article {
 
 export type ArticleInput = Omit<Article, 'id' | 'created_at' | 'updated_at'>
 
-export function getPublishedArticles(limit = 100): Article[] {
-  return db
-    .prepare('SELECT * FROM articles WHERE published = 1 ORDER BY created_at DESC LIMIT ?')
-    .all(limit) as Article[]
+export interface Lead {
+  id: number
+  name: string
+  company: string
+  email: string
+  message: string | null
+  pack: string | null
+  created_at: string
 }
 
-export function getArticleBySlug(slug: string): Article | null {
-  return (db.prepare('SELECT * FROM articles WHERE slug = ? AND published = 1').get(slug) as Article) ?? null
+// Apply safe defaults for NOT NULL columns when the caller (AI, stale localStorage,
+// etc.) forgets to send them. Keeps the server as the last line of defense.
+function withDefaults(data: Partial<ArticleInput>): ArticleInput {
+  return {
+    slug: data.slug ?? '',
+    title: data.title ?? '',
+    meta_title: data.meta_title || data.title || '',
+    meta_desc: data.meta_desc ?? '',
+    keywords: data.keywords ?? '',
+    category: data.category || 'NOTICIAS',
+    content: data.content ?? '',
+    image_url: data.image_url ?? null,
+    image_alt: data.image_alt ?? null,
+    published: data.published === 1 ? 1 : 0,
+    author: data.author?.trim() || 'Jorge Rodríguez',
+  }
 }
 
-export function getAllArticles(): Article[] {
-  return db.prepare('SELECT * FROM articles ORDER BY created_at DESC').all() as Article[]
+function unwrap<T>(label: string, data: T | null, error: { message: string } | null): T {
+  if (error) throw new Error(`[${label}] ${error.message}`)
+  if (data === null) throw new Error(`[${label}] no data returned`)
+  return data
 }
 
-export function getArticleById(id: number): Article | null {
-  return (db.prepare('SELECT * FROM articles WHERE id = ?').get(id) as Article) ?? null
+export async function getPublishedArticles(limit = 100): Promise<Article[]> {
+  const { data, error } = await supabase
+    .from('articles')
+    .select('*')
+    .eq('published', 1)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+  if (error) throw new Error(`[getPublishedArticles] ${error.message}`)
+  return (data ?? []) as Article[]
 }
 
-export function createArticle(data: ArticleInput): Article {
-  const result = db.prepare(`
-    INSERT INTO articles (slug, title, meta_title, meta_desc, keywords, category, content, image_url, image_alt, published, author)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
-    data.slug, data.title, data.meta_title, data.meta_desc,
-    data.keywords, data.category, data.content,
-    data.image_url ?? null, data.image_alt ?? null,
-    data.published, data.author,
-  )
-  return getArticleById(result.lastInsertRowid as number)!
+export async function getArticleBySlug(slug: string): Promise<Article | null> {
+  const { data, error } = await supabase
+    .from('articles')
+    .select('*')
+    .eq('slug', slug)
+    .eq('published', 1)
+    .maybeSingle()
+  if (error) throw new Error(`[getArticleBySlug] ${error.message}`)
+  return (data as Article) ?? null
 }
 
-export function updateArticle(id: number, data: Partial<ArticleInput>): Article {
-  const article = getArticleById(id)
-  if (!article) throw new Error(`Article ${id} not found`)
-  const merged = { ...article, ...data }
-  db.prepare(`
-    UPDATE articles SET
-      slug = ?, title = ?, meta_title = ?, meta_desc = ?,
-      keywords = ?, category = ?, content = ?,
-      image_url = ?, image_alt = ?, published = ?, author = ?,
-      updated_at = CURRENT_TIMESTAMP
-    WHERE id = ?
-  `).run(
-    merged.slug, merged.title, merged.meta_title, merged.meta_desc,
-    merged.keywords, merged.category, merged.content,
-    merged.image_url ?? null, merged.image_alt ?? null,
-    merged.published, merged.author, id,
-  )
-  return getArticleById(id)!
+export async function getAllArticles(): Promise<Article[]> {
+  const { data, error } = await supabase
+    .from('articles')
+    .select('*')
+    .order('created_at', { ascending: false })
+  if (error) throw new Error(`[getAllArticles] ${error.message}`)
+  return (data ?? []) as Article[]
 }
 
-export function deleteArticle(id: number): void {
-  db.prepare('DELETE FROM articles WHERE id = ?').run(id)
+export async function getArticleById(id: number): Promise<Article | null> {
+  const { data, error } = await supabase
+    .from('articles')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle()
+  if (error) throw new Error(`[getArticleById] ${error.message}`)
+  return (data as Article) ?? null
 }
 
-export function togglePublish(id: number, published: 0 | 1): void {
-  db.prepare('UPDATE articles SET published = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(published, id)
+export async function createArticle(data: Partial<ArticleInput>): Promise<Article> {
+  const safe = withDefaults(data)
+  const { data: row, error } = await supabase
+    .from('articles')
+    .insert(safe)
+    .select()
+    .single()
+  return unwrap('createArticle', row as Article, error)
 }
 
-export function getStats(): { articles: number; published: number; leads: number } {
-  const articles = (db.prepare('SELECT COUNT(*) as c FROM articles').get() as { c: number }).c
-  const published = (db.prepare('SELECT COUNT(*) as c FROM articles WHERE published = 1').get() as { c: number }).c
-  const leads = (db.prepare('SELECT COUNT(*) as c FROM leads').get() as { c: number }).c
-  return { articles, published, leads }
+export async function updateArticle(id: number, patch: Partial<ArticleInput>): Promise<Article> {
+  const existing = await getArticleById(id)
+  if (!existing) throw new Error(`Article ${id} not found`)
+  const merged = withDefaults({ ...existing, ...patch })
+  const { data: row, error } = await supabase
+    .from('articles')
+    .update(merged)
+    .eq('id', id)
+    .select()
+    .single()
+  return unwrap('updateArticle', row as Article, error)
 }
 
-export function getLeads() {
-  return db.prepare('SELECT * FROM leads ORDER BY created_at DESC').all()
+export async function deleteArticle(id: number): Promise<void> {
+  const { error } = await supabase.from('articles').delete().eq('id', id)
+  if (error) throw new Error(`[deleteArticle] ${error.message}`)
+}
+
+export async function togglePublish(id: number, published: 0 | 1): Promise<void> {
+  const { error } = await supabase.from('articles').update({ published }).eq('id', id)
+  if (error) throw new Error(`[togglePublish] ${error.message}`)
+}
+
+export async function getStats(): Promise<{ articles: number; published: number; leads: number }> {
+  const [articlesRes, publishedRes, leadsRes] = await Promise.all([
+    supabase.from('articles').select('*', { count: 'exact', head: true }),
+    supabase.from('articles').select('*', { count: 'exact', head: true }).eq('published', 1),
+    supabase.from('leads').select('*', { count: 'exact', head: true }),
+  ])
+  if (articlesRes.error) throw new Error(`[getStats.articles] ${articlesRes.error.message}`)
+  if (publishedRes.error) throw new Error(`[getStats.published] ${publishedRes.error.message}`)
+  if (leadsRes.error) throw new Error(`[getStats.leads] ${leadsRes.error.message}`)
+  return {
+    articles: articlesRes.count ?? 0,
+    published: publishedRes.count ?? 0,
+    leads: leadsRes.count ?? 0,
+  }
+}
+
+export async function getLeads(): Promise<Lead[]> {
+  const { data, error } = await supabase
+    .from('leads')
+    .select('*')
+    .order('created_at', { ascending: false })
+  if (error) throw new Error(`[getLeads] ${error.message}`)
+  return (data ?? []) as Lead[]
+}
+
+export async function createLead(lead: Omit<Lead, 'id' | 'created_at'>): Promise<void> {
+  const { error } = await supabase.from('leads').insert(lead)
+  if (error) throw new Error(`[createLead] ${error.message}`)
 }
