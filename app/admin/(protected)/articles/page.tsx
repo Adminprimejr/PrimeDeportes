@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { getAllArticles } from '@/lib/articles'
 import ArticlesTable from '@/components/admin/ArticlesTable'
 
+export const dynamic = 'force-dynamic'
+
 export default async function ArticlesListPage() {
   const articles = await getAllArticles()
 
