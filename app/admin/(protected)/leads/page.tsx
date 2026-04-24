@@ -1,5 +1,7 @@
 import { getLeads, type Lead } from '@/lib/articles'
 
+export const dynamic = 'force-dynamic'
+
 const PACK_COLORS: Record<string, string> = {
   digital: 'bg-white/10 text-white',
   multimedia: 'bg-gold/20 text-gold',
