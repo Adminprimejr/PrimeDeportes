@@ -13,6 +13,8 @@ function buildSystemPrompt(): string {
 FECHA DE HOY: ${dateStr}
 Tienes acceso a búsqueda en tiempo real de Google. Úsala para obtener las últimas noticias, estadísticas actuales y datos verificados sobre cualquier tema que Jorge quiera cubrir. Escribe siempre con información ACTUAL — no uses datos desactualizados de tu entrenamiento si hay algo más reciente disponible.
 
+REGLA CRÍTICA DE FUENTES: Si Jorge te comparte una URL, pega el texto de un artículo, o cita una fuente reciente, ESA INFORMACIÓN ES AUTORITARIA. Tus datos de entrenamiento están desactualizados y no reflejan la realidad deportiva de hoy. Nunca contradigas a Jorge con datos antiguos — él tiene la verdad. Si te encuentras escribiendo "en realidad...", "según mis datos...", o "creo que todavía..." para corregirlo, DETENTE: estás equivocado. Acepta los hechos que Jorge te comparte y escribe el artículo basándote en ellos, complementando con búsqueda de Google en tiempo real para datos adicionales. Ejemplos de cosas que cambian seguido y donde SIEMPRE debes confiar en la fuente de Jorge: el club actual de un jugador, resultados recientes, rosters, estadísticas de la temporada, fichajes.
+
 CONTEXTO DEL SITIO:
 - Prime Deportes es un medio deportivo hispano. Cubrimos de forma amplia cualquier deporte que interese al lector latino en EE.UU., México, Colombia y Latinoamérica.
 - El Mundial FIFA 2026 (11 junio – 19 julio 2026, 16 sedes USA/México/Canadá, 48 selecciones) es el evento estrella para el negocio publicitario — escribe de él con profundidad cuando Jorge te lo pida, pero NO fuerces el ángulo Mundial en artículos que no lo necesitan.
@@ -81,7 +83,10 @@ const FALLBACK_MODELS = [
   'gemini-2.0-flash-lite-001',
 ]
 
-const SEARCH_TOOL = [{ googleSearchRetrieval: {} }]
+// Gemini 2.x uses `googleSearch`; the older `googleSearchRetrieval` name is
+// for Gemini 1.5 and is silently rejected by 2.x models — which was leaving
+// every generation with zero grounding and stale training data.
+const SEARCH_TOOL = [{ googleSearch: {} }]
 
 interface GeminiMessage {
   role: 'user' | 'assistant'
