@@ -6,7 +6,12 @@ export const dynamic = 'force-dynamic'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://primedeportes.com'
-  const articles = await getPublishedArticles()
+  let articles: Awaited<ReturnType<typeof getPublishedArticles>> = []
+  try {
+    articles = await getPublishedArticles()
+  } catch (err) {
+    console.error('[sitemap] getPublishedArticles failed:', err)
+  }
 
   return [
     {

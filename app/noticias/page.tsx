@@ -38,7 +38,12 @@ function formatDate(dateStr: string) {
 }
 
 export default async function NoticiasPage() {
-  const articles = await getPublishedArticles(30)
+  let articles: Awaited<ReturnType<typeof getPublishedArticles>> = []
+  try {
+    articles = await getPublishedArticles(30)
+  } catch (err) {
+    console.error('[noticias] getPublishedArticles failed:', err)
+  }
   const [featured, ...rest] = articles
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://primedeportes.com'
 
