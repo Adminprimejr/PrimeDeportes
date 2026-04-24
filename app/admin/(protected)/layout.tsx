@@ -7,6 +7,8 @@ import { ToastContainer } from '@/components/admin/Toast'
 // Set ADMIN_OPEN=1 in .env.local to bypass login (useful during initial setup)
 const BYPASS = process.env.ADMIN_OPEN === '1'
 
+export const dynamic = 'force-dynamic'
+
 export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
   if (!BYPASS) {
     const cookieStore = await cookies()
